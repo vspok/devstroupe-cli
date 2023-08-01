@@ -1,0 +1,14 @@
+import { IFilterOptions } from 'src/helpers/interfaces/filter-options';
+import { <%= entityNameTitleCase %>Model } from '../models/<%= entityName.toLowerCase() %>';
+import { IPaginator } from 'src/helpers/interfaces/paginator-response-interface';
+
+export interface Filter<%= entityNameTitleCase %> extends IFilterOptions<Partial<<%= entityNameTitleCase %>Model>, {}> {}
+
+export abstract class I<%= entityNameTitleCase %>Repository {
+  abstract create(<%= entityName.toLowerCase() %>: <%= entityNameTitleCase %>Model): Promise<<%= entityNameTitleCase %>Model>;
+  abstract update(<%= entityName.toLowerCase() %>Id: number, <%= entityName.toLowerCase() %>: Partial<<%= entityNameTitleCase %>Model>): Promise<<%= entityNameTitleCase %>Model>;
+  abstract delete(<%= entityName.toLowerCase() %>Id: number): Promise<void>;
+  abstract findOne(filter: Partial<<%= entityNameTitleCase %>Model>): Promise<<%= entityNameTitleCase %>Model | null>;
+  abstract findMany(filter: Filter<%= entityNameTitleCase %>): Promise<IPaginator<<%= entityNameTitleCase %>Model> | null>;
+  abstract findAll(): Promise<<%= entityNameTitleCase %>Model[] | null>;
+}

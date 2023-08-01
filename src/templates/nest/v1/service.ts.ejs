@@ -1,0 +1,37 @@
+import { validate } from 'class-validator';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import {  <%= props.name %>Entity } from './entities/<%= props.arquivo_name%>.entity';
+import { <%= props.name %>CadastroDto } from './dto/<%= props.arquivo_name%>.cadastro.dto';
+import { Utils } from 'src/utils/utils';
+
+@Injectable()
+export class  <%= props.name %>Service{
+    constructor(
+        @Inject('<%= props.provide_name %>')
+        private repository: Repository< <%= props.name %>Entity>,
+    ) {
+
+    }
+    private readonly logger = new Logger( <%= props.name %>Service.name);
+
+
+    async cadastrar(<%= props.entity_name%>: <%= props.name %>CadastroDto): Promise< <%= props.name %>Entity> {
+    
+        try {
+            const <%= props.entity_name%>Create = this.repository.create(<%= props.entity_name%>);
+            const erros = await validate(<%= props.entity_name%>Create);
+            if (erros.length > 0) {
+                Utils.ErrorApiValidate(erros);
+            }
+            return this.repository.save(<%= props.entity_name%>Create);
+        } catch (error) {
+            this.logger.error(error);
+            console.error(error);
+             throw new BadRequestException({
+                descricao: 'Erro ao Cadastrar <%= props.entity_name%>! - 001',
+                ...error,
+            });
+        }
+    }
+}

@@ -1,0 +1,18 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { <%= entityName %>Entity } from '../entities/<%= entityNameLowerCase %>.entity';
+import { <%= entityName %>Model } from 'src/domain/models/<%= entityNameLowerCase %>';
+
+@Injectable()
+export class <%= entityNameTitleCase %>Repository {
+  constructor(
+    @InjectRepository(<%= entityNameTitleCase %>Entity)
+    private readonly <%= entityNameLowerCase %>Repository: Repository<<%= entityName %>Entity>,
+  ) {}
+
+  // Add your repository methods here
+  // async create(<%= entityNameLowerCase %>: <%= entityName %>Model): Promise<<%= entityName %>Model> {
+  //   ...
+  // }
+}

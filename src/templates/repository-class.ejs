@@ -1,0 +1,38 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { <%= entityNameTitleCase %>Entity } from '../entities/<%= entityName.toLowerCase() %>.entity';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityName.toLowerCase() %>';
+import { I<%= entityNameTitleCase %>Repository, Filter<%= entityNameTitleCase %> } from 'src/domain/repositories/<%= entityName.toLowerCase() %>-repository';
+
+@Injectable()
+export class <%= entityNameTitleCase %>Repository implements I<%= entityNameTitleCase %>Repository {
+  constructor(
+    @InjectRepository(<%= entityNameTitleCase %>Entity)
+    private readonly <%= entityName.toLowerCase() %>Repository: Repository<<%= entityNameTitleCase %>Entity>,
+  ) {}
+
+  async create(<%= entityName.toLowerCase() %>: <%= entityNameTitleCase %>Model): Promise<<%= entityNameTitleCase %>Model> {
+    // Implement create method
+  }
+
+  async update(<%= entityName.toLowerCase() %>Id: number, <%= entityName.toLowerCase() %>: Partial<<%= entityNameTitleCase %>Model>): Promise<<%= entityNameTitleCase %>Model> {
+    // Implement update method
+  }
+
+  async delete(<%= entityName.toLowerCase() %>Id: number): Promise<void> {
+    // Implement delete method
+  }
+
+  async findOne(filter: Partial<<%= entityNameTitleCase %>Model>): Promise<<%= entityNameTitleCase %>Model | null> {
+    // Implement findOne method
+  }
+
+  async findMany(filter: Filter<%= entityNameTitleCase %>): Promise<IPaginator<<%= entityNameTitleCase %>Model> | null> {
+    // Implement findMany method
+  }
+
+  async findAll(): Promise<<%= entityNameTitleCase %>Model[] | null> {
+    // Implement findAll method
+  }
+}

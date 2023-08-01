@@ -1,0 +1,23 @@
+
+import { forwardRef, Module } from '@nestjs/common';
+import { AuthModule } from 'src/auth/auth.module';
+import { DatabaseModule } from 'src/database/database.module';
+import { Connection } from 'typeorm';
+import { <%= props.name %>Controller } from './<%= props.arquivo_name%>.controller';
+import { <%= props.name %>Entity } from './entities/<%= props.arquivo_name%>.entity';
+import { <%= props.name %>Service } from './<%= props.arquivo_name%>.service';
+
+@Module({
+    imports: [DatabaseModule, forwardRef(() => AuthModule)],
+    providers: [
+        {
+            provide: '<%= props.provide_name %>',
+            useFactory: (connection: Connection) =>
+                connection.getRepository(<%= props.name %>Entity),
+            inject: ['DATABASE_CONNECTION'],
+        },
+        <%= props.name %>Service,
+    ],
+    controllers: [<%= props.name %>Controller],
+})
+export class <%= props.name %>Module {}

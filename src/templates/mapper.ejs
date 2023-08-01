@@ -1,0 +1,27 @@
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameLowerCase %>';
+import { <%= entityNameTitleCase %>Entity } from '../entities/<%= entityNameLowerCase %>.entity';
+
+export class <%= entityNameTitleCase %>Mapper {
+    static toDatabase(<%= entityNameLowerCase %>: <%= entityNameTitleCase %>Model): <%= entityNameTitleCase %>Entity {
+        const <%= entityNameLowerCase %>Entity: <%= entityNameTitleCase %>Entity = new <%= entityNameTitleCase %>Entity();
+        <%= entityNameLowerCase %>Entity.<%= entityNameLowerCase %>_id = <%= entityNameLowerCase %>.<%= entityNameLowerCase %>_id;
+        <% properties.forEach(prop => { -%>
+            <%= entityNameLowerCase %>Entity.<%= prop.prop %> = <%= entityNameLowerCase %>.<%= prop.prop %>;
+        <% }) -%>
+        <%= entityNameLowerCase %>Entity.createdAt = <%= entityNameLowerCase %>.createdAt;
+        return <%= entityNameLowerCase %>Entity;
+    }
+
+    static toDomain(<%= entityNameLowerCase %>Entity: <%= entityNameTitleCase %>Entity): <%= entityNameTitleCase %>Model {
+        const <%= entityNameLowerCase %>: <%= entityNameTitleCase %>Model = new <%= entityNameTitleCase %>Model();
+
+        <%= entityNameLowerCase %>.<%= entityNameLowerCase %>_id = <%= entityNameLowerCase %>Entity.<%= entityNameLowerCase %>_id;
+        <% properties.forEach(prop => { -%>
+            <%= entityNameLowerCase %>.<%= prop.prop %> = <%= entityNameLowerCase %>Entity.<%= prop.prop %>;
+        <% }) -%>
+        <%= entityNameLowerCase %>.createdAt = <%= entityNameLowerCase %>Entity.createdAt;
+        <%= entityNameLowerCase %>.updatedAt = <%= entityNameLowerCase %>Entity.updatedAt;
+
+        return <%= entityNameLowerCase %>;
+    }
+}

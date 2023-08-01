@@ -1,0 +1,32 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { IBcryptService } from 'src/domain/adapters/bcrypt.interface';
+import { ILogger } from 'src/domain/adapters/logger.interface';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityName %>';
+import { I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= entityName %>-repository';
+
+interface Create<%= entityNameTitleCase %>Request {
+<% properties.forEach(prop => { -%>
+    <%= prop.prop %>: <%= prop.type %>;
+<% }) -%>
+}
+
+interface Create<%= entityNameTitleCase %>Response {
+    <%= entityName %>: <%= entityNameTitleCase %>Model;
+}
+
+@Injectable()
+export class Create<%= entityNameTitleCase %> {
+    constructor(private readonly logger: ILogger, private readonly <%= entityName %>Repository: I<%= entityNameTitleCase %>Repository, private readonly bcryptService: IBcryptService) {}
+
+    async execute(request: Create<%= entityNameTitleCase %>Request): Promise<Create<%= entityNameTitleCase %>Response> {
+        const <%= entityName %> = new <%= entityNameTitleCase %>Model();
+        <% properties.forEach(prop => { -%>
+            <%= entityName %>.<%= prop.prop %> = request.<%= prop.prop %>;
+          <% }) -%>
+        const created_<%= entityName %> = await this.<%= entityName %>Repository.create(<%= entityName %>);
+
+        this.logger.log('create<%= entityNameTitleCase %>Cases execute', 'New <%= entityName %> have been created');
+
+        return { <%= entityName %>: created_<%= entityName %> };
+    }
+}

@@ -1,0 +1,11 @@
+
+import { IsOptional, IsString, Validate } from 'class-validator';
+import { DatasEntity } from 'src/shared/entidades_genericas/datas.entity';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity()
+export class <%= props.name %>Entity extends DatasEntity {
+    @PrimaryGeneratedColumn() <%= props.entity_name%>_id: number;
+
+}
+

@@ -1,0 +1,21 @@
+
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { <%= props.name %>Service } from './<%= props.arquivo_name%>.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { ApiGuard } from 'src/auth/auth.guard';
+
+import { <%= props.name %>CadastroDto } from './dto/<%= props.arquivo_name%>.cadastro.dto';
+
+@Controller('<%= props.arquivo_name%>')
+export class <%= props.name %>Controller {
+
+  constructor(private readonly service: <%= props.name %>Service) { }
+
+  @UseGuards(JwtAuthGuard, ApiGuard)
+  @Post('cadastrar')
+  async cadastrar(@Body() body: <%= props.name %>CadastroDto) {
+      return await this.service.cadastrar({...body});
+  }
+
+}
+
