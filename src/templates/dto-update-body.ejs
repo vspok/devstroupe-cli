@@ -1,0 +1,11 @@
+import { IsNotEmpty, IsOptional, Matches } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+export class Update<%= entityNameTitleCase %>Body {
+    <% properties.forEach(prop => { -%>
+        @ApiProperty({ required: false }) <%= prop.required ? '@IsNotEmpty()' : '' %>
+        @IsOptional()
+        <%= prop.prop %>: <%= prop.type %>;
+
+      <% }) -%>
+}

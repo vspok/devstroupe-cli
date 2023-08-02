@@ -1,0 +1,20 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
+
+export class <%= entityNameTitleCase %>ViewModel {
+    @ApiProperty()
+    <%= entityName %>_id: number;
+
+    <% properties.forEach(prop => { -%>
+        @ApiProperty()
+        <%= prop.prop %>:  <%= prop.type %>;
+
+    <% }) -%>
+
+    constructor(<%= entityNameCamelCase %>: <%= entityNameTitleCase %>Model) {
+        this.<%= entityName %>_id = <%= entityNameCamelCase %>.<%= entityName %>_id;
+        <% properties.forEach(prop => { -%>
+            this.<%= prop.prop %> = <%= entityNameCamelCase %>.<%= prop.prop %>;
+          <% }) -%>
+    }
+}

@@ -9,7 +9,7 @@ import * as prettier from 'prettier'
 export default {
     name: 'generate-entity',
     alias: ['ge'],
-    description: 'Generate entity, model, and repository files for NestJS',
+    description: 'Gerar arquivos nessesario pra uma entidade apartir de um array de propredades',
     run: async (toolbox: GluegunToolbox) => {
         const {
             parameters,
@@ -40,6 +40,8 @@ export default {
         const databaseModuleFilePath = path.join(cwd, 'src', 'infra', 'database', 'database.module.ts')
         const httpModuleFilePath = path.join(cwd, 'src', 'infra', 'http', 'http.module.ts')
         const controllerFilePath = path.join(cwd, 'src', 'infra', 'http', 'controllers')
+        const viewModelFilePath = path.join(cwd, 'src', 'infra', 'http', 'view-models')
+        const dtosFilePath = path.join(cwd, 'src', 'infra', 'http', 'dtos')
 
         const entityFilePath = path.join(entitiesFolderPath, `${entityNameArquivoCase}.entity.ts`)
         const repositoryFilePath = path.join(repositoriesInterfaceFolderPath, `${entityNameArquivoCase}-repository.ts`)
@@ -51,7 +53,7 @@ export default {
         }
 
         // Generate entity properties
-        const entityProperties = generateProperties().map((prop) => {
+        const entityProperties = (await generateProperties()).map((prop) => {
             return {
                 ...prop,
                 default: prop.default !== '' ? prop.default : undefined,
@@ -146,6 +148,23 @@ export default {
         const ControllerPath = path.join(controllerFilePath, `${entityNameArquivoCase}.controller.ts`)
         fs.writeFileSync(ControllerPath, ControllerContent)
         await prettifyFile(ControllerPath)
+        //DTOS
+        const createDtoTemplatePath = path.join(__dirname, '..', 'src', 'templates', 'dto-create-body.ejs')
+        const createDtoContent = await ejs.renderFile(createDtoTemplatePath, templateData)
+        const createDtoPath = path.join(dtosFilePath, `create-${entityNameArquivoCase}-body.ts`)
+        fs.writeFileSync(createDtoPath, createDtoContent)
+        await prettifyFile(createDtoPath)
+        const updateDtoTemplatePath = path.join(__dirname, '..', 'src', 'templates', 'dto-update-body.ejs')
+        const updateDtoContent = await ejs.renderFile(updateDtoTemplatePath, templateData)
+        const updateDtoPath = path.join(dtosFilePath, `update-${entityNameArquivoCase}-body.ts`)
+        fs.writeFileSync(updateDtoPath, updateDtoContent)
+        await prettifyFile(updateDtoPath)
+        //viewModel
+        const viewModelTemplatePath = path.join(__dirname, '..', 'src', 'templates', 'view-model.ejs')
+        const viewModelContent = await ejs.renderFile(viewModelTemplatePath, templateData)
+        const viewModelPath = path.join(viewModelFilePath, `${entityNameArquivoCase}-view-model.ts`)
+        fs.writeFileSync(viewModelPath, viewModelContent)
+        await prettifyFile(viewModelPath)
 
         print.success(`Entity, model, and repository files for "${entityName}" created successfully.`)
 
@@ -175,6 +194,8 @@ export default {
             import { ${nameTitleCase}Controller } from './controllers/${entityNameArquivoCase}.controller';\n`
             if (!moduleContent.includes(importStatement)) {
                 // If the import is not present, add it at the top of the file
+
+                await setTimeout(async () => {}, 500)
                 await toolbox.patching.patch(httpModuleFilePath, {
                     insert: importStatement,
                     before: `\nconst`,
@@ -191,6 +212,8 @@ export default {
                     insert: importStatementCASES,
                     before: `@Module({`,
                 })
+                await setTimeout(async () => {}, 500)
+
                 //  await prettifyFile(httpModuleFilePath)
                 const updatedModuleContent = await filesystem.read(httpModuleFilePath)
                 moduleContent = updatedModuleContent
@@ -218,14 +241,15 @@ export default {
             let updatedModuleContent = moduleContent
                 .replace(providersRegex, (match) => match.replace(']', ` ...USE_CASES_${entityName.toLocaleUpperCase()} ]`))
                 .replace(controllersRegex, (match) => match.replace(']', ` ${nameTitleCase}Controller, ]`))
+                await setTimeout(async () => {}, 500)
 
             // Overwrite the module file with the updated content
-            await setTimeout(async () => {
                 await filesystem.write(httpModuleFilePath, updatedModuleContent)
-            }, 500)
-            await setTimeout(async () => {
+                await setTimeout(async () => {}, 500)
+
                 await prettifyFile(httpModuleFilePath)
-            }, 500)
+                await setTimeout(async () => {}, 500)
+
             success(`Provider '${entityName}' added to the module.`)
         } catch (e) {
             error(`An error occurred while adding the provider '${entityName}' to the module: ${e.message}`)
@@ -322,22 +346,30 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
             fs.writeFileSync(filePath, formattedContent)
         }
         // Function to generate entity properties
-        function generateProperties() {
+        async function  generateProperties() {
             // Customize this function to generate properties based on your requirements
+
+            let props = JSON.parse(await filesystem.read(path.join(cwd, 'newEntityProp.json')) ) as {
+                prop: string,
+                type: string,
+                default: null | string,
+                required: boolean,
+            }[]
+            return props;
             // For example:
-            return [
-                {
-                    prop: 'name',
-                    type: 'string',
-                    default: 'teste',
-                },
-                {
-                    prop: 'xx',
-                    type: 'number',
-                    default: null,
-                    required: true,
-                },
-            ]
+            // return [
+            //     {
+            //         prop: 'name',
+            //         type: 'string',
+            //         default: 'teste',
+            //     },
+            //     {
+            //         prop: 'xx',
+            //         type: 'number',
+            //         default: null,
+            //         required: true,
+            //     },
+            // ]
         }
 
         // Function to convert entity name to title case
