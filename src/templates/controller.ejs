@@ -1,0 +1,62 @@
+import { Controller, Get } from '@nestjs/common';
+import { Body, Delete, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common/decorators';
+import { ApiExtraModels, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { <%= entityNameTitleCase %>ViewModel } from '../view-models/<%= entityNameArquivoCase %>-view-model';
+import { Create<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/create-<%= entityNameArquivoCase %>';
+import { Create<%= entityNameTitleCase %>Body } from '../dtos/create-<%= entityNameArquivoCase %>-body';
+import { AuthGuard } from 'src/infra/guards/auth.guard';
+import { Update<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/update-<%= entityNameArquivoCase %>';
+import { Update<%= entityNameTitleCase %>Body } from '../dtos/update-<%= entityNameArquivoCase %>-body';
+import { FindMany<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/find-many-<%= entityNameArquivoCase %>';
+import { Find<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/find-<%= entityNameArquivoCase %>';
+import { Delete<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/delete-<%= entityNameArquivoCase %>';
+import { IPaginator } from 'src/helpers/interfaces/paginator-response-interface';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
+
+@Controller('<%= entityNameCamelCase %>')
+@ApiTags('<%= entityNameCamelCase %>')
+@ApiResponse({ status: 500, description: 'Internal error' })
+@ApiExtraModels(<%= entityNameTitleCase %>ViewModel)
+export class <%= entityNameTitleCase %>Controller {
+    constructor(private create<%= entityNameTitleCase %>: Create<%= entityNameTitleCase %>, private update<%= entityNameTitleCase %>: Update<%= entityNameTitleCase %>, private findMany<%= entityNameTitleCase %>: FindMany<%= entityNameTitleCase %>, private find<%= entityNameTitleCase %>: Find<%= entityNameTitleCase %>, private delete<%= entityNameTitleCase %>: Delete<%= entityNameTitleCase %>) {}
+
+    @UseGuards(AuthGuard)
+    @ApiOperation({ summary: 'create <%= entityNameTitleCase %>' })
+    @Post(['','create'])
+    async create(@Body() body: Create<%= entityNameTitleCase %>Body) {
+        const { <%= entityName %> } = await this.create<%= entityNameTitleCase %>.execute(body);
+        return new <%= entityNameTitleCase %>ViewModel(<%= entityName %>);
+    }
+
+    @UseGuards(AuthGuard)
+    @ApiOperation({ summary: 'Update <%= entityNameTitleCase %>' })
+    @Post(':<%= entityName %>_id')
+    async update(@Param('<%= entityName %>_id') <%= entityName %>_id: string,@Body() body: Update<%= entityNameTitleCase %>Body) {
+        const { <%= entityName %>_updated } = await this.update<%= entityNameTitleCase %>.execute({<%= entityName %>_id: +<%= entityName %>_id, <%= entityName %>: body});
+        return new <%= entityNameTitleCase %>ViewModel(<%= entityName %>_updated);
+    }
+
+    @UseGuards(AuthGuard)
+    @ApiOperation({ summary: 'FindMany <%= entityNameTitleCase %>' })
+    @Get(['', 'list'])
+    async findMany(@Query() filter: IPaginator<<%= entityNameTitleCase %>Model>) {
+        const { <%= entityName %>_page } = await this.findMany<%= entityNameTitleCase %>.execute({filter});
+        return <%= entityName %>_page;
+    }
+
+    @UseGuards(AuthGuard)
+    @ApiOperation({ summary: 'FindById <%= entityNameTitleCase %>' })
+    @Get(':<%= entityName %>_id')
+    async findById(@Param('<%= entityName %>_id') <%= entityName %>_id: string) {
+        const { <%= entityName %> } = await this.find<%= entityNameTitleCase %>.execute({filter:{<%= entityName %>_id:+<%= entityName %>_id}});
+        return new <%= entityNameTitleCase %>ViewModel(<%= entityName %>);
+    }
+
+    @UseGuards(AuthGuard)
+    @ApiOperation({ summary: 'Delete <%= entityNameTitleCase %>' })
+    @Delete(':<%= entityName %>_id')
+    async delete(@Param('<%= entityName %>_id') <%= entityName %>_id: string) {
+        await this.delete<%= entityNameTitleCase %>.execute({<%= entityName %>_id:+<%= entityName %>_id});
+        return;
+    }
+}

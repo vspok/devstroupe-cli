@@ -1,38 +1,112 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { <%= entityNameTitleCase %>Entity } from '../entities/<%= entityName.toLowerCase() %>.entity';
-import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityName.toLowerCase() %>';
-import { I<%= entityNameTitleCase %>Repository, Filter<%= entityNameTitleCase %> } from 'src/domain/repositories/<%= entityName.toLowerCase() %>-repository';
+import { Brackets, Repository } from 'typeorm';
+import { IPaginator } from 'src/helpers/interfaces/paginator-response-interface';
+import { Direction, FiltroLimit } from 'src/helpers/interfaces/filter-options';
+import { snakeCase } from 'typeorm/util/StringUtils';
+import { PaginateCreate } from 'src/infra/common/utils/paginate-create';
+import { <%= entityNameTitleCase %>Entity } from '../entities/<%= entityNameArquivoCase %>.entity';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
+import { Filter<%= entityNameTitleCase %>, I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
 
 @Injectable()
 export class <%= entityNameTitleCase %>Repository implements I<%= entityNameTitleCase %>Repository {
-  constructor(
-    @InjectRepository(<%= entityNameTitleCase %>Entity)
-    private readonly <%= entityName.toLowerCase() %>Repository: Repository<<%= entityNameTitleCase %>Entity>,
-  ) {}
+    constructor(
+        @InjectRepository(<%= entityNameTitleCase %>Entity)
+        private readonly <%= entityNameCamelCase %>EntityRepository: Repository<<%= entityNameTitleCase %>Entity>,
+    ) {}
+    async create(<%= entityName %>: <%= entityNameTitleCase %>Model): Promise<<%= entityNameTitleCase %>Model> {
+        try {
+            return await this.<%= entityNameCamelCase %>EntityRepository
+                .save(<%= entityName %>)
+                .then(async (<%= entityName %>Saved) => {
+                    const <%= entityName %>Updated = await this.findOne({ <%= entityName %>_id: <%= entityName %>Saved.<%= entityName %>_id });
+                    return <%= entityName %>Updated;
+                })
+                .catch((error) => {
+                    throw new BadRequestException({
+                        descricao: 'Erro ao Create <%= entityNameTitleCase %>! - 002',
+                        ...error,
+                    });
+                });
+        } catch (error) {
+            throw new BadRequestException({
+                descricao: 'Error Create <%= entityNameTitleCase %>! - 001',
+                ...error,
+            });
+        }
+    }
+    async update(<%= entityName %>_id: number, <%= entityName %>: Partial<<%= entityNameTitleCase %>Model>): Promise<<%= entityNameTitleCase %>Model> {
+        try {
+            return await this.<%= entityNameCamelCase %>EntityRepository
+                .save({ <%= entityName %>_id, ...<%= entityName %> })
+                .then(async (<%= entityName %>Saved) => {
+                    const <%= entityName %>Updated = await this.findOne({ <%= entityName %>_id: <%= entityName %>Saved.<%= entityName %>_id });
+                    return <%= entityName %>Updated;
+                })
+                .catch((error) => {
+                    throw new BadRequestException({
+                        descricao: 'Error Update <%= entityNameTitleCase %>! - 002',
+                        ...error,
+                    });
+                });
+        } catch (error) {
+            throw new BadRequestException({
+                descricao: 'Error Create <%= entityNameTitleCase %>! - 001',
+                ...error,
+            });
+        }
+    }
 
-  async create(<%= entityName.toLowerCase() %>: <%= entityNameTitleCase %>Model): Promise<<%= entityNameTitleCase %>Model> {
-    // Implement create method
-  }
+    async delete(<%= entityName %>_id: number): Promise<void> {
+        await this.<%= entityNameCamelCase %>EntityRepository.softDelete({ <%= entityName %>_id });
+    }
+    async findOne(filter: Partial<<%= entityNameTitleCase %>Model>): Promise<<%= entityNameTitleCase %>Model> {
+        return await this.<%= entityNameCamelCase %>EntityRepository.findOneBy(filter);
+    }
+    findMany(filter: Filter<%= entityNameTitleCase %>): Promise<IPaginator<<%= entityNameTitleCase %>Model>> {
+        try {
+            let queryBuilder = this.<%= entityNameCamelCase %>EntityRepository.createQueryBuilder('<%= entityName %>');
+            let pageFiltro = 1,
+                limitFiltro: FiltroLimit = 10;
+            if (filter) {
+                const { direction, sort, page, limit, text, ...where } = filter;
+                if (where) {
+                    queryBuilder = queryBuilder.andWhere(where);
+                }
+                if (page) {
+                    pageFiltro = page;
+                }
+                if (limit) {
+                    limitFiltro = limit;
+                }
+                if (sort && direction) {
+                    queryBuilder = queryBuilder.addOrderBy(snakeCase(sort.replace(/\./g, '_')), direction.toLocaleUpperCase() as Direction);
+                }
+                if (text) {
+                    queryBuilder = queryBuilder.andWhere(
+                        new Brackets((qb) => {
+                            qb.orWhere('<%= entityName %>.<%= entityName %>_id LIKE :<%= entityName %>_id_text', {
+                                <%= entityName %>_id_text: '%' + text + '%',
+                            }).orWhere('LOWER(<%= entityName %>.name) LIKE :name_text', {
+                                name_text: '%' + text.toLocaleLowerCase() + '%',
+                            });
+                        }),
+                    );
+                }
+            }
+            return PaginateCreate<<%= entityNameTitleCase %>Entity>(queryBuilder, pageFiltro, limitFiltro);
+        } catch (error) {
+            console.error(error);
+            throw new BadRequestException({
+                descricao: 'Error findMany <%= entityNameTitleCase %>! - 001',
+                ...error,
+            });
+        }
+    }
+    findAll(): Promise<<%= entityNameTitleCase %>Model[]> {
+        let queryBuilder = this.<%= entityNameCamelCase %>EntityRepository.createQueryBuilder('<%= entityName %>');
 
-  async update(<%= entityName.toLowerCase() %>Id: number, <%= entityName.toLowerCase() %>: Partial<<%= entityNameTitleCase %>Model>): Promise<<%= entityNameTitleCase %>Model> {
-    // Implement update method
-  }
-
-  async delete(<%= entityName.toLowerCase() %>Id: number): Promise<void> {
-    // Implement delete method
-  }
-
-  async findOne(filter: Partial<<%= entityNameTitleCase %>Model>): Promise<<%= entityNameTitleCase %>Model | null> {
-    // Implement findOne method
-  }
-
-  async findMany(filter: Filter<%= entityNameTitleCase %>): Promise<IPaginator<<%= entityNameTitleCase %>Model> | null> {
-    // Implement findMany method
-  }
-
-  async findAll(): Promise<<%= entityNameTitleCase %>Model[] | null> {
-    // Implement findAll method
-  }
+        return queryBuilder.getMany();
+    }
 }

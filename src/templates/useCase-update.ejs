@@ -1,0 +1,28 @@
+import { Injectable } from '@nestjs/common';
+import { IBcryptService } from 'src/domain/adapters/bcrypt.interface';
+import { ILogger } from 'src/domain/adapters/logger.interface';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
+import { I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
+
+interface Update<%= entityNameTitleCase %>Request {
+    <%= entityName %>: Partial<<%= entityNameTitleCase %>Model>;
+    <%= entityName %>_id: number;
+}
+
+interface Update<%= entityNameTitleCase %>Response {
+    <%= entityName %>_updated: <%= entityNameTitleCase %>Model;
+}
+
+@Injectable()
+export class Update<%= entityNameTitleCase %> {
+    constructor(private readonly logger: ILogger, private readonly <%= entityNameCamelCase %>Repository: I<%= entityNameTitleCase %>Repository, private readonly bcryptService: IBcryptService) {}
+
+    async execute(request: Update<%= entityNameTitleCase %>Request): Promise<Update<%= entityNameTitleCase %>Response> {
+        const { <%= entityName %>_id, <%= entityName %> } = request;
+        const <%= entityName %>_updated = await this.<%= entityNameCamelCase %>Repository.update(<%= entityName %>_id, <%= entityName %>);
+
+        // this.logger.log('Find<%= entityNameTitleCase %>Cases execute', 'New <%= entityNameCamelCase %> have been created');
+
+        return { <%= entityName %>_updated };
+    }
+}

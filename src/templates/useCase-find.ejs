@@ -1,0 +1,27 @@
+import { Injectable } from '@nestjs/common';
+import { ILogger } from 'src/domain/adapters/logger.interface';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
+import { I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
+
+interface Find<%= entityNameTitleCase %>Request {
+    filter: Partial<<%= entityNameTitleCase %>Model>;
+}
+
+interface Find<%= entityNameTitleCase %>Response {
+    <%= entityName %>: <%= entityNameTitleCase %>Model;
+}
+
+@Injectable()
+export class Find<%= entityNameTitleCase %> {
+    constructor(private readonly logger: ILogger, private readonly <%= entityNameCamelCase %>Repository: I<%= entityNameTitleCase %>Repository) {}
+
+    async execute(request: Find<%= entityNameTitleCase %>Request): Promise<Find<%= entityNameTitleCase %>Response> {
+        const { filter } = request;
+
+        const <%= entityName %> = await this.<%= entityNameCamelCase %>Repository.findOne(filter);
+
+        // this.logger.log('Find<%= entityNameTitleCase %>Cases execute', 'New <%= entityNameCamelCase %> have been created');
+
+        return { <%= entityName %> };
+    }
+}

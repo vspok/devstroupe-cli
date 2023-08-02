@@ -5,11 +5,11 @@ export class <%= entityNameTitleCase %>Entity {
   @PrimaryGeneratedColumn({ type: 'int', name: '<%= entityNameLowerCase %>_id' })
   <%= entityNameLowerCase %>_id: number;
   <% properties.forEach(prop => { -%>
-  
+
   @Column('<%= prop.type %>', {default:  '<%= prop.default ? prop.default : 'null' %>', nullable: <%= prop.required ? 'false' : 'true' %> })
     <%= prop.prop %>: <%= prop.type %>;
 <% }) -%>
-  
+
   // Add your entity properties here
   // @Column(...)
   // propertyName: type;

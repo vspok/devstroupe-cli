@@ -1,0 +1,24 @@
+import { Injectable } from '@nestjs/common';
+import { ILogger } from 'src/domain/adapters/logger.interface';
+import { I<%= entityNameTitleCase%>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
+
+interface Delete<%= entityNameTitleCase%>Request {
+    <%= entityName %>_id: number;
+}
+
+type Delete<%= entityNameTitleCase%>Response = void;
+
+@Injectable()
+export class Delete<%= entityNameTitleCase%> {
+    constructor(private readonly logger: ILogger, private readonly <%= entityNameCamelCase %>Repository: I<%= entityNameTitleCase%>Repository) {}
+
+    async execute(request: Delete<%= entityNameTitleCase%>Request): Promise<Delete<%= entityNameTitleCase%>Response> {
+        const { <%= entityName %>_id } = request;
+
+        const <%= entityName %>_deleted = await this.<%= entityNameCamelCase %>Repository.delete(<%= entityName %>_id);
+
+        // this.logger.log('Find<%= entityNameTitleCase%>Cases execute', 'New <%= entityNameTitleCase %> have been created');
+        this.logger.log('delete<%= entityNameTitleCase%>Cases execute', `<%= entityNameTitleCase %> ${<%= entityName %>_id} have been deleted`);
+
+    }
+}

@@ -1,27 +1,27 @@
-import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameLowerCase %>';
-import { <%= entityNameTitleCase %>Entity } from '../entities/<%= entityNameLowerCase %>.entity';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
+import { <%= entityNameTitleCase %>Entity } from '../entities/<%= entityNameArquivoCase %>.entity';
 
 export class <%= entityNameTitleCase %>Mapper {
-    static toDatabase(<%= entityNameLowerCase %>: <%= entityNameTitleCase %>Model): <%= entityNameTitleCase %>Entity {
-        const <%= entityNameLowerCase %>Entity: <%= entityNameTitleCase %>Entity = new <%= entityNameTitleCase %>Entity();
-        <%= entityNameLowerCase %>Entity.<%= entityNameLowerCase %>_id = <%= entityNameLowerCase %>.<%= entityNameLowerCase %>_id;
+    static toDatabase(<%= entityNameCamelCase %>: <%= entityNameTitleCase %>Model): <%= entityNameTitleCase %>Entity {
+        const <%= entityNameCamelCase %>Entity: <%= entityNameTitleCase %>Entity = new <%= entityNameTitleCase %>Entity();
+        <%= entityNameCamelCase %>Entity.<%= entityName %>_id = <%= entityNameCamelCase %>.<%= entityName %>_id;
         <% properties.forEach(prop => { -%>
-            <%= entityNameLowerCase %>Entity.<%= prop.prop %> = <%= entityNameLowerCase %>.<%= prop.prop %>;
+            <%= entityNameCamelCase %>Entity.<%= prop.prop %> = <%= entityNameCamelCase %>.<%= prop.prop %>;
         <% }) -%>
-        <%= entityNameLowerCase %>Entity.createdAt = <%= entityNameLowerCase %>.createdAt;
-        return <%= entityNameLowerCase %>Entity;
+        <%= entityNameCamelCase %>Entity.createdAt = <%= entityNameCamelCase %>.createdAt;
+        return <%= entityNameCamelCase %>Entity;
     }
 
-    static toDomain(<%= entityNameLowerCase %>Entity: <%= entityNameTitleCase %>Entity): <%= entityNameTitleCase %>Model {
-        const <%= entityNameLowerCase %>: <%= entityNameTitleCase %>Model = new <%= entityNameTitleCase %>Model();
+    static toDomain(<%= entityNameCamelCase %>Entity: <%= entityNameTitleCase %>Entity): <%= entityNameTitleCase %>Model {
+        const <%= entityNameCamelCase %>: <%= entityNameTitleCase %>Model = new <%= entityNameTitleCase %>Model();
 
-        <%= entityNameLowerCase %>.<%= entityNameLowerCase %>_id = <%= entityNameLowerCase %>Entity.<%= entityNameLowerCase %>_id;
+        <%= entityNameCamelCase %>.<%= entityName %>_id = <%= entityNameCamelCase %>Entity.<%= entityName %>_id;
         <% properties.forEach(prop => { -%>
-            <%= entityNameLowerCase %>.<%= prop.prop %> = <%= entityNameLowerCase %>Entity.<%= prop.prop %>;
+            <%= entityNameCamelCase %>.<%= prop.prop %> = <%= entityNameCamelCase %>Entity.<%= prop.prop %>;
         <% }) -%>
-        <%= entityNameLowerCase %>.createdAt = <%= entityNameLowerCase %>Entity.createdAt;
-        <%= entityNameLowerCase %>.updatedAt = <%= entityNameLowerCase %>Entity.updatedAt;
+        <%= entityNameCamelCase %>.createdAt = <%= entityNameCamelCase %>Entity.createdAt;
+        <%= entityNameCamelCase %>.updatedAt = <%= entityNameCamelCase %>Entity.updatedAt;
 
-        return <%= entityNameLowerCase %>;
+        return <%= entityNameCamelCase %>;
     }
 }

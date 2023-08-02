@@ -1,0 +1,29 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { ILogger } from 'src/domain/adapters/logger.interface';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
+import { I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
+import { IFilterOptions } from 'src/helpers/interfaces/filter-options';
+import { IPaginator } from 'src/helpers/interfaces/paginator-response-interface';
+
+interface FindMany<%= entityNameTitleCase %>Request {
+    filter: IFilterOptions<<%= entityNameTitleCase %>Model>;
+}
+
+interface FindMany<%= entityNameTitleCase %>Response {
+    <%= entityName %>_page: IPaginator<<%= entityNameTitleCase %>Model>;
+}
+
+@Injectable()
+export class FindMany<%= entityNameTitleCase %> {
+    constructor(private readonly logger: ILogger, private readonly <%= entityNameCamelCase %>Repository: I<%= entityNameTitleCase %>Repository) {}
+
+    async execute(request: FindMany<%= entityNameTitleCase %>Request): Promise<FindMany<%= entityNameTitleCase %>Response> {
+        const { filter } = request;
+
+        const <%= entityName %>_page = await this.<%= entityNameCamelCase %>Repository.findMany(filter);
+
+        // this.logger.log('FindMany<%= entityNameTitleCase %>Cases execute', 'New <%= entityNameCamelCase %> have been created');
+
+        return { <%= entityName %>_page };
+    }
+}
