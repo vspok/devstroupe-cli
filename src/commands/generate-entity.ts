@@ -176,8 +176,14 @@ export default {
 
         try {
             // Read the content of the database.module file
+
+            success(`010`)
             await prettifyFile(httpModuleFilePath)
-            let moduleContent = await filesystem.read(httpModuleFilePath)
+            success(`011`)
+            let moduleContent = await filesystem.readAsync(httpModuleFilePath)
+            await new Promise((resolve) => setTimeout(resolve, 100))
+
+            success(`012`)
 
             // Check if the provider is already present in the module
             if (moduleContent.includes(entityName)) {
@@ -195,27 +201,36 @@ export default {
             if (!moduleContent.includes(importStatement)) {
                 // If the import is not present, add it at the top of the file
 
-                await setTimeout(async () => {}, 500)
+                success(`013`)
+
                 await toolbox.patching.patch(httpModuleFilePath, {
                     insert: importStatement,
                     before: `\nconst`,
                 })
+                success(`01`)
+
+                await new Promise((resolve) => setTimeout(resolve, 1000))
                 // await prettifyFile(httpModuleFilePath)
-                const updatedModuleContent = await filesystem.read(httpModuleFilePath)
+                const updatedModuleContent = await filesystem.readAsync(httpModuleFilePath)
                 moduleContent = updatedModuleContent
+                await new Promise((resolve) => setTimeout(resolve, 100))
             }
 
             const importStatementCASES = `const USE_CASES_${entityName.toLocaleUpperCase()} = [Create${nameTitleCase}, Update${nameTitleCase}, Delete${nameTitleCase}, Find${nameTitleCase}, FindMany${nameTitleCase}];\n`
             if (!moduleContent.includes(importStatementCASES)) {
+                success(`02`)
+
                 // If the import is not present, add it at the top of the file
                 await toolbox.patching.patch(httpModuleFilePath, {
                     insert: importStatementCASES,
                     before: `@Module({`,
                 })
-                await setTimeout(async () => {}, 500)
+                success(`03`)
+
+                await new Promise((resolve) => setTimeout(resolve, 1000))
 
                 //  await prettifyFile(httpModuleFilePath)
-                const updatedModuleContent = await filesystem.read(httpModuleFilePath)
+                const updatedModuleContent = await filesystem.readAsync(httpModuleFilePath)
                 moduleContent = updatedModuleContent
             }
 
@@ -241,14 +256,18 @@ export default {
             let updatedModuleContent = moduleContent
                 .replace(providersRegex, (match) => match.replace(']', ` ...USE_CASES_${entityName.toLocaleUpperCase()} ]`))
                 .replace(controllersRegex, (match) => match.replace(']', ` ${nameTitleCase}Controller, ]`))
-                await setTimeout(async () => {}, 500)
+            await new Promise((resolve) => setTimeout(resolve, 200))
+            success(`1`)
 
             // Overwrite the module file with the updated content
-                await filesystem.write(httpModuleFilePath, updatedModuleContent)
-                await setTimeout(async () => {}, 500)
+            await filesystem.writeAsync(httpModuleFilePath, updatedModuleContent)
+            success(`2`)
 
-                await prettifyFile(httpModuleFilePath)
-                await setTimeout(async () => {}, 500)
+            await new Promise((resolve) => setTimeout(resolve, 200))
+            success(`3`)
+
+            await prettifyFile(httpModuleFilePath)
+            success(`4`)
 
             success(`Provider '${entityName}' added to the module.`)
         } catch (e) {
@@ -268,8 +287,14 @@ export default {
 
         try {
             // Read the content of the database.module file
+            success(`M011`)
             await prettifyFile(databaseModuleFilePath)
-            let moduleContent = filesystem.read(databaseModuleFilePath)
+            await new Promise((resolve) => setTimeout(resolve, 100))
+
+            success(`M012`)
+
+            let moduleContent = await filesystem.readAsync(databaseModuleFilePath)
+            success(`M013`)
 
             // Check if the provider is already present in the module
             if (moduleContent.includes(entityName)) {
@@ -283,12 +308,23 @@ import { ${nameTitleCase}Repository } from './typeorm/repositories/${entityNameA
 import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCase}.entity';\n`
             if (!moduleContent.includes(importStatement)) {
                 // If the import is not present, add it at the top of the file
-                await toolbox.patching.patch(databaseModuleFilePath, {
-                    insert: importStatement,
-                    before: `\n@Module({`,
-                })
-                const updatedModuleContent = await filesystem.read(databaseModuleFilePath)
+                await new Promise((resolve) => setTimeout(resolve, 1000))
+                success(`M014`)
+
+                await toolbox.patching
+                    .patch(databaseModuleFilePath, {
+                        insert: importStatement,
+                        before: `\n@Module({`,
+                    })
+                    .catch((e) => {
+                        error(`M01aaaaa` + e)
+                    })
+                success(`M015`)
+                await new Promise((resolve) => setTimeout(resolve, 500))
+
+                const updatedModuleContent = await filesystem.readAsync(databaseModuleFilePath)
                 moduleContent = updatedModuleContent
+                success(`M016`)
             }
 
             // Find the position of the "providers" array in the module file
@@ -323,14 +359,17 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
                 .replace(providersRegex, (match) => match.replace(']', ` ${contentToAdd} ]`))
                 .replace(exportsRegex, (match) => match.replace(']', ` I${nameTitleCase}Repository, ]`))
             updatedModuleContent = updatedModuleContent.replace(TypeOrmModuleRegex, (match) => match.replace(']', ` ${nameTitleCase}Entity ]`))
+            success(`M017`)
 
             // Overwrite the module file with the updated content
-            await setTimeout(async () => {
-                await filesystem.write(databaseModuleFilePath, updatedModuleContent)
-            }, 500)
-            await setTimeout(async () => {
-                await prettifyFile(databaseModuleFilePath)
-            }, 500)
+            await new Promise((resolve) => setTimeout(resolve, 100))
+            await filesystem.writeAsync(databaseModuleFilePath, updatedModuleContent)
+            success(`M018`)
+
+            await new Promise((resolve) => setTimeout(resolve, 100))
+            await prettifyFile(databaseModuleFilePath)
+            success(`M019`)
+
             success(`Provider '${entityName}' added to the module.`)
         } catch (e) {
             error(`An error occurred while adding the provider '${entityName}' to the module: ${e.message}`)
@@ -346,16 +385,16 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
             fs.writeFileSync(filePath, formattedContent)
         }
         // Function to generate entity properties
-        async function  generateProperties() {
+        async function generateProperties() {
             // Customize this function to generate properties based on your requirements
 
-            let props = JSON.parse(await filesystem.read(path.join(cwd, 'newEntityProp.json')) ) as {
-                prop: string,
-                type: string,
-                default: null | string,
-                required: boolean,
+            let props = JSON.parse(await filesystem.read(path.join(cwd, 'newEntityProp.json'))) as {
+                prop: string
+                type: string
+                default: null | string
+                required: boolean
             }[]
-            return props;
+            return props
             // For example:
             // return [
             //     {

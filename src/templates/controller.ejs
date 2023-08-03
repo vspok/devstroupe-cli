@@ -30,7 +30,7 @@ export class <%= entityNameTitleCase %>Controller {
 
     @UseGuards(AuthGuard)
     @ApiOperation({ summary: 'Update <%= entityNameTitleCase %>' })
-    @Post(':<%= entityName %>_id')
+    @Put(':<%= entityName %>_id')
     async update(@Param('<%= entityName %>_id') <%= entityName %>_id: string,@Body() body: Update<%= entityNameTitleCase %>Body) {
         const { <%= entityName %>_updated } = await this.update<%= entityNameTitleCase %>.execute({<%= entityName %>_id: +<%= entityName %>_id, <%= entityName %>: body});
         return new <%= entityNameTitleCase %>ViewModel(<%= entityName %>_updated);

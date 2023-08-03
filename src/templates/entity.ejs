@@ -6,7 +6,7 @@ export class <%= entityNameTitleCase %>Entity {
   <%= entityNameLowerCase %>_id: number;
   <% properties.forEach(prop => { -%>
 
-  @Column('<%= prop.type %>', {default:  '<%= prop.default ? prop.default : 'null' %>', nullable: <%= prop.required ? 'false' : 'true' %> })
+  @Column({default:  '<%= prop.default ? prop.default : null %>', nullable: <%= prop.required ? 'false' : 'true' %> })
     <%= prop.prop %>: <%= prop.type %>;
 <% }) -%>
 
