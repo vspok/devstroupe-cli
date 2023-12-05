@@ -1,18 +1,15 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-
+<% for (let i = 0; i < relationships.length; i++) { %>
+    import { <%= relationships[i].entity %> } from './<%= relationships[i].entity %>';
+    <% } %>
 @Entity('<%= entityName %>')
 export class <%= entityNameTitleCase %>Entity {
   @PrimaryGeneratedColumn({ type: 'int', name: '<%= entityNameLowerCase %>_id' })
   <%= entityNameLowerCase %>_id: number;
-  <% properties.forEach(prop => { -%>
 
-  @Column({default:  '<%= prop.default ? prop.default : null %>', nullable: <%= prop.required ? 'false' : 'true' %> })
-    <%= prop.prop %>: <%= prop.type %>;
-<% }) -%>
+  <%= propsCode %>
 
-  // Add your entity properties here
-  // @Column(...)
-  // propertyName: type;
+  <%= relationshipsCode %>
 
   @CreateDateColumn()
   createdAt: Date;
