@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class Update<%= entityNameTitleCase %>Body {
     <% properties.forEach(prop => { -%>
-        @ApiProperty({ required: false }) <%= prop.required ? '@IsNotEmpty()' : '' %>
+        @ApiProperty({ required: false })
         @IsOptional()
         <%= prop.prop %>: <%= prop.type %>;
 
