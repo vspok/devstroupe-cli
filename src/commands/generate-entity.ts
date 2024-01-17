@@ -58,7 +58,7 @@ export default {
 
             let entityData = entity
             let entityProperties = entityData.props
-            let relationships = entityData.relationships
+            let relationships = entityData.relationships || []
 
             // Generate entity properties
             const propsCode = generatePropsCode(entityProperties)
@@ -79,7 +79,7 @@ export default {
                 relationshipsImports: relationshipsImports,
             }
             const generatedCode = `
-        import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne,OneToOne, OneToMany, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+        import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne,OneToOne, OneToMany, JoinTable, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
         ${relationshipsImports}
         @Entity('${entityName}')
         export class ${templateData.entityNameTitleCase}Entity {
@@ -561,9 +561,9 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
                             valueDefault = () => "CURRENT_TIMESTAMP";
                         }
                     }
-                    if (prop.required && prop.default) {
+                    if (prop?.required && prop.default) {
                         propCode = `@Column({ nullable: false,  default: '${valueDefault}'})\n  ${propCode.replace(`@Column()`, '')}`
-                    } else if (prop.required) {
+                    } else if (prop?.required) {
                         propCode = `@Column({ nullable: false })\n  ${propCode.replace(`@Column()`, '')}`
                     } else if (prop.default) {
                         propCode = `@Column({ default: '${valueDefault}' })\n  ${propCode.replace(`@Column()`, '')}`
@@ -579,11 +579,23 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
                 let relCode = '';
 
                 if (relationship.type === 'many-to-many') {
-                  relCode = `@ManyToMany(type => ${
-                    toTitleCase(relationship.entity)
-                  }Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(relationship.entity)})\n  ${
-                    relationship.name
-                  }: ${toTitleCase(relationship.entity)}Entity[];`;
+                    relCode = `@ManyToMany(type => ${toTitleCase(relationship.entity)}Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(relationship.entity)})`;
+
+                    // if (relationship.joinTable) {
+                        relCode += `\n  @JoinTable({\n`;
+                        relCode += `    name: '${toSnakeCase(entityData.name)}_${toSnakeCase(relationship.entity)}',\n`;
+                        relCode += `    joinColumn: {\n`;
+                        relCode += `        name: '${toSnakeCase(entityData.name)}_id',\n`;
+                        relCode += `        referencedColumnName: '${toSnakeCase(entityData.name)}_id',\n`;
+                        relCode += `    },\n`;
+                        relCode += `    inverseJoinColumn: {\n`;
+                        relCode += `        name: '${toSnakeCase(relationship.entity)}_id',\n`;
+                        relCode += `        referencedColumnName: '${toSnakeCase(relationship.entity)}_id',\n`;
+                        relCode += `    },\n`;
+                        relCode += `  })`;
+                    // }
+
+                    relCode += `\n  ${relationship.name}: ${toTitleCase(relationship.entity)}Entity[];`;
                 } else if (relationship.type === 'many-to-one') {
                 //   relCode = `@ManyToOne(type => ${
                 //     toTitleCase(relationship.entity)
