@@ -12,6 +12,7 @@ import { Find<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= en
 import { Delete<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/delete-<%= entityNameArquivoCase %>';
 import { IPaginator } from 'src/helpers/interfaces/paginator-response-interface';
 import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
+import { Filter<%= entityNameTitleCase %>} from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
 
 @Controller('<%= entityNameCamelCase %>')
 @ApiTags('<%= entityNameCamelCase %>')
@@ -39,7 +40,7 @@ export class <%= entityNameTitleCase %>Controller {
     @UseGuards(AuthGuard)
     @ApiOperation({ summary: 'FindMany <%= entityNameTitleCase %>' })
     @Get(['', 'list'])
-    async findMany(@Query() filter: IPaginator<<%= entityNameTitleCase %>Model>) {
+    async findMany(@Query() filter: Filter<%= entityNameTitleCase %>) {
         const { <%= entityName %>_page } = await this.findMany<%= entityNameTitleCase %>.execute({filter});
         return <%= entityName %>_page;
     }
