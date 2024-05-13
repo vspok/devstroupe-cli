@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ILogger } from 'src/domain/adapters/logger.interface';
 import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
-import { I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
+import { Filter<%= entityNameTitleCase %>, I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
 import { IFilterOptions } from 'src/helpers/interfaces/filter-options';
 import { IPaginator } from 'src/helpers/interfaces/paginator-response-interface';
 
 interface FindMany<%= entityNameTitleCase %>Request {
-    filter: IFilterOptions<<%= entityNameTitleCase %>Model>;
+    filter: Filter<%= entityNameTitleCase %>;
 }
 
 interface FindMany<%= entityNameTitleCase %>Response {

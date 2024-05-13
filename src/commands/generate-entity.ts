@@ -417,6 +417,7 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
         // Function to generate entity properties
         async function generateProperties() {
             // Customize this function to generate properties based on your requirements
+            type DecimalFormatString = `${number},${number}`;
 
             let props = JSON.parse(await filesystem.readAsync(path.join(cwd, 'newEntityProp.json'))) as {
                 name: string,
@@ -425,6 +426,8 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
                     type: string,
                     required?: true,
                     default?: any,
+                    decimal_format_db?: DecimalFormatString,
+                    adicionalOptions?: string,
                 }[
 
                 ],
@@ -544,16 +547,16 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
 
                     if (prop.type === 'string') {
                         propCode += `
-            ${prop.prop}: string;`
+                        ${prop.prop}: string;`
                     } else if (prop.type === 'number') {
                         propCode += `
-            ${prop.prop}: number;`
+                        ${prop.prop}: number;`
                     } else if (prop.type === 'boolean') {
                         propCode += `
-            ${prop.prop}: boolean;`
+                        ${prop.prop}: boolean;`
                     } else if (prop.type === 'Date') {
                         propCode += `
-            ${prop.prop}: Date;`
+                        ${prop.prop}: Date;`
                     } // Pode adicionar mais tipos conforme necessário
                     let valueDefault = prop.default;
                     if (prop.default) {
@@ -561,12 +564,32 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
                             valueDefault = () => "CURRENT_TIMESTAMP";
                         }
                     }
+                    let adicionalOptions = '';
+                    if (prop?.adicionalOptions) {
+                        adicionalOptions = `${prop?.adicionalOptions.replace(/{|}/g, '')}`;
+                    }
+                    if (prop?.decimal_format_db) {
+                        let decimalFormat = `{
+                            type: 'decimal',
+                            precision: ${prop?.decimal_format_db.split(',')[0]||20},
+                            scale: ${prop?.decimal_format_db.split(',')[1]||2},
+                        }`
+                        if(adicionalOptions) {
+
+                            adicionalOptions += `, ${decimalFormat.replace(/{|}/g, '')}`;
+                        } else {
+
+                            adicionalOptions = `${decimalFormat.replace(/{|}/g, '')}`;
+                        }
+                    }
                     if (prop?.required && prop.default) {
-                        propCode = `@Column({ nullable: false,  default: '${valueDefault}'})\n  ${propCode.replace(`@Column()`, '')}`
+                        propCode = `@Column({ nullable: false,  default: '${valueDefault}' ${adicionalOptions? ', '+adicionalOptions+'' : ''}})\n  ${propCode.replace(`@Column()`, '')}`
                     } else if (prop?.required) {
-                        propCode = `@Column({ nullable: false })\n  ${propCode.replace(`@Column()`, '')}`
+                        propCode = `@Column({ nullable: false ${adicionalOptions? ', '+adicionalOptions+'' : ''}})\n  ${propCode.replace(`@Column()`, '')}`
                     } else if (prop.default) {
-                        propCode = `@Column({ default: '${valueDefault}' })\n  ${propCode.replace(`@Column()`, '')}`
+                        propCode = `@Column({ default: '${valueDefault}' ${adicionalOptions? ', '+adicionalOptions+'' : ''} })\n  ${propCode.replace(`@Column()`, '')}`
+                    } else if (prop?.adicionalOptions) {
+                        propCode = `@Column({ ${adicionalOptions} })\n  ${propCode.replace(`@Column()`, '')}`
                     }
 
                     return propCode
