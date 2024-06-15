@@ -627,7 +627,9 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
                 //   }: ${toTitleCase(relationship.entity)}Entity;`;
                   relCode = `@ManyToOne(type => ${
                     toTitleCase(relationship.entity)
-                  }Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(relationship.entity)})\n  ${
+                  }Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(relationship.entity)})\n
+                    @JoinColumn({ name: '${toSnakeCase(relationship.name)}_id' }) \n
+                    ${
                     relationship.name
                   }: ${toTitleCase(relationship.entity)}Entity;`;
                 } else if (relationship.type === 'one-to-many') {
