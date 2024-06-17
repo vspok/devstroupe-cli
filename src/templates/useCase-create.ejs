@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { IBcryptService } from 'src/domain/adapters/bcrypt.interface';
 import { ILogger } from 'src/domain/adapters/logger.interface';
-import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
-import { I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
+import { I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>-repository';
 
 interface Create<%= entityNameTitleCase %>Request {
 <% properties.forEach(prop => { -%>

@@ -6,8 +6,8 @@ import { Direction, FiltroLimit } from 'src/helpers/interfaces/filter-options';
 import { snakeCase } from 'typeorm/util/StringUtils';
 import { PaginateCreate } from 'src/infra/common/utils/paginate-create';
 import { <%= entityNameTitleCase %>Entity } from '../entities/<%= entityNameArquivoCase %>.entity';
-import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
-import { Filter<%= entityNameTitleCase %>, I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
+import { Filter<%= entityNameTitleCase %>, I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>-repository';
 
 @Injectable()
 export class <%= entityNameTitleCase %>Repository implements I<%= entityNameTitleCase %>Repository {

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ILogger } from 'src/domain/adapters/logger.interface';
-import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
-import { Filter<%= entityNameTitleCase %>, I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
+import { Filter<%= entityNameTitleCase %>, I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>-repository';
 import { IFilterOptions } from 'src/helpers/interfaces/filter-options';
 import { IPaginator } from 'src/helpers/interfaces/paginator-response-interface';
 

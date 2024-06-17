@@ -1,5 +1,5 @@
 import { IFilterOptions } from 'src/helpers/interfaces/filter-options';
-import { <%= entityNameTitleCase %>Model } from '../models/<%= entityNameArquivoCase %>';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
 import { IPaginator } from 'src/helpers/interfaces/paginator-response-interface';
 
 export interface Filter<%= entityNameTitleCase %> extends IFilterOptions<Partial<<%= entityNameTitleCase %>Model>, {}> {}

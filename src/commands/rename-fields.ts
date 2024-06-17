@@ -13,9 +13,7 @@ const command: GluegunCommand = {
           success(path.join(cwd, 'CAMPOS_PARA_RENOMEAR.txt'))
           success(path.join(cwd, 'src'))
         const txtFilePath = path.join(cwd, 'CAMPOS_PARA_RENOMEAR.txt')
-        error('13');
         const projectDirectory = path.join(cwd, 'src')
-        error('12');
         function toSnakeCase(name) {
             return name.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
           }

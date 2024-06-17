@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ILogger } from 'src/domain/adapters/logger.interface';
-import { I<%= entityNameTitleCase%>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
+import { I<%= entityNameTitleCase%>Repository } from 'src/domain/repositories/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>-repository';
 
 interface Delete<%= entityNameTitleCase%>Request {
     <%= entityName %>_id: number;

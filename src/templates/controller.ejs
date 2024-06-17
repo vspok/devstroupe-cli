@@ -11,8 +11,8 @@ import { FindMany<%= entityNameTitleCase %> } from 'src/application/use-cases/<%
 import { Find<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/find-<%= entityNameArquivoCase %>';
 import { Delete<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/delete-<%= entityNameArquivoCase %>';
 import { IPaginator } from 'src/helpers/interfaces/paginator-response-interface';
-import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
-import { Filter<%= entityNameTitleCase %>} from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
+import { Filter<%= entityNameTitleCase %>} from 'src/domain/repositories/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>-repository';
 
 @Controller('<%= entityNameCamelCase %>')
 @ApiTags('<%= entityNameCamelCase %>')

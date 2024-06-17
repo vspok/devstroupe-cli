@@ -1,5 +1,5 @@
-import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
-import { <%= entityNameTitleCase %>Entity } from '../entities/<%= entityNameArquivoCase %>.entity';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
+import { <%= entityNameTitleCase %>Entity } from '<%= is_tenant ? '../' : '' %>../entities/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>.entity';
 
 export class <%= entityNameTitleCase %>Mapper {
     static toDatabase(<%= entityNameCamelCase %>: <%= entityNameTitleCase %>Model): <%= entityNameTitleCase %>Entity {
