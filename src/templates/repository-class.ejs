@@ -1,20 +1,33 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 import { IPaginator } from 'src/helpers/interfaces/paginator-response-interface';
 import { Direction, FiltroLimit } from 'src/helpers/interfaces/filter-options';
 import { snakeCase } from 'typeorm/util/StringUtils';
 import { PaginateCreate } from 'src/infra/common/utils/paginate-create';
-import { <%= entityNameTitleCase %>Entity } from '../entities/<%= entityNameArquivoCase %>.entity';
+import { <%= entityNameTitleCase %>Entity } from '<%= is_tenant ? '../' : '' %>../entities/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>.entity';
 import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
 import { Filter<%= entityNameTitleCase %>, I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>-repository';
-
+<% if (is_tenant) { %>
+import { IDataSource } from 'src/helpers/interfaces/data-source.interface';
+<% } %>
 @Injectable()
 export class <%= entityNameTitleCase %>Repository implements I<%= entityNameTitleCase %>Repository {
+    <% if (is_tenant) { %>
+    private readonly <%= entityNameCamelCase %>EntityRepository: Repository<<%= entityNameTitleCase %>Entity>
+    constructor(
+        @Inject('TENANCY_CONNECTION') connection: IDataSource
+        ) {
+        this.<%= entityNameCamelCase %>EntityRepository = connection?.getRepository(<%= entityNameTitleCase %>Entity);
+
+    }
+    <% } else { %>
     constructor(
         @InjectRepository(<%= entityNameTitleCase %>Entity)
         private readonly <%= entityNameCamelCase %>EntityRepository: Repository<<%= entityNameTitleCase %>Entity>,
     ) {}
+    <% } %>
+
     async create(<%= entityName %>: <%= entityNameTitleCase %>Model): Promise<<%= entityNameTitleCase %>Model> {
         try {
             return await this.<%= entityNameCamelCase %>EntityRepository

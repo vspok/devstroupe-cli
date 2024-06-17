@@ -86,7 +86,7 @@ export default {
                 is_tenant:is_tenant
             }
             const generatedCode = `
-        import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne,OneToOne, OneToMany, JoinTable, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+        import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne,OneToOne, OneToMany, JoinTable, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
         ${relationshipsImports}
         @Entity('${entityName}')
         export class ${templateData.entityNameTitleCase}Entity {
