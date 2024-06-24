@@ -7,7 +7,7 @@ export class <%= entityNameTitleCase %>ViewModel {
 
     <% properties.forEach(prop => { -%>
         @ApiProperty()
-        <%= prop.prop %>:  <%= prop.type %>;
+        <%= prop.prop %>:  <%= prop.type %><%= prop.required ? '' : ' | null' %>;;
 
     <% }) -%>
 

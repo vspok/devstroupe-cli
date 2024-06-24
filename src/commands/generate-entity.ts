@@ -381,19 +381,36 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${is_tenant? 'tenante
                 }
 
                 // Find the position of the TypeOrmModule.forFeature array in the module file
-                const TypeOrmModuleRegex = /TypeOrmModule.forFeature\(\s*\[[^\]]*\]/
-                const TypeOrmModuleMatch = moduleContent.match(TypeOrmModuleRegex)
 
-                if (!TypeOrmModuleMatch) {
-                    error('Could not find the "TypeOrmModule" array in the module.')
-                    continue
-                }
 
                 // Add the new provider to the "providers" and "exports" arrays
                 let updatedModuleContent = moduleContent
                     .replace(providersRegex, (match) => match.replace(']', ` ${contentToAdd} ]`))
                     .replace(exportsRegex, (match) => match.replace(']', ` I${nameTitleCase}Repository, ]`))
-                updatedModuleContent = updatedModuleContent.replace(TypeOrmModuleRegex, (match) => match.replace(']', ` ${nameTitleCase}Entity ]`))
+
+                if (is_tenant){
+                    // const exportsEntitys = await filesystem.readAsync(databaseModuleFilePath)
+                    const TypeOrmModuleRegex = /TENANTED_ENTITIES\s*\[[^\]]*\]/
+                    const TypeOrmModuleMatch = moduleContent.match(TypeOrmModuleRegex)
+
+                    if (TypeOrmModuleMatch) {
+                        updatedModuleContent = updatedModuleContent.replace(TypeOrmModuleRegex, (match) => match.replace(']', ` ${nameTitleCase}Entity ]`))
+                    } else {
+                        error('Could not find the "TypeOrmModule" array in the module.')
+
+                    }
+                } else {
+                    const TypeOrmModuleRegex = /TypeOrmModule.forFeature\(\s*\[[^\]]*\]/
+                    const TypeOrmModuleMatch = moduleContent.match(TypeOrmModuleRegex)
+
+                    if (TypeOrmModuleMatch) {
+                        updatedModuleContent = updatedModuleContent.replace(TypeOrmModuleRegex, (match) => match.replace(']', ` ${nameTitleCase}Entity ]`))
+                    } else {
+                        error('Could not find the "TypeOrmModule" array in the module.')
+
+                    }
+                }
+
                 success(`M017`)
 
                 // Overwrite the module file with the updated content
