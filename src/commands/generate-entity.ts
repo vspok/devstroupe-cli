@@ -12,7 +12,6 @@ export default {
     description: 'Gerar arquivos nessesario pra uma entidade apartir de um array de propredades',
     run: async (toolbox: GluegunToolbox) => {
         const {
-
             print,
             print: { error, success },
             filesystem,
@@ -63,7 +62,9 @@ export default {
             // Generate entity properties
             const propsCode = generatePropsCode(entityProperties)
             const relationshipsCode = generateRelationshipsCode(relationships, entityData)
-            const relationshipsImports = relationships.map((relationship) => `import { ${toTitleCase(relationship.entity)}Entity } from './${toArquivoCase(relationship.entity)}.entity';`).join('\n')
+            const relationshipsImports = relationships
+                .map((relationship) => `import { ${toTitleCase(relationship.entity)}Entity } from './${toArquivoCase(relationship.entity)}.entity';`)
+                .join('\n')
 
             // Template EJS data
             const templateData = {
@@ -403,7 +404,6 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
                 error(`An error occurred while adding the provider '${entityName}' to the module: ${e.message}`)
             }
             await new Promise((resolve) => setTimeout(resolve, 1000))
-
         }
         async function prettifyFile(filePath: string) {
             // Use prettier to format the modified file
@@ -417,25 +417,23 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
         // Function to generate entity properties
         async function generateProperties() {
             // Customize this function to generate properties based on your requirements
-            type DecimalFormatString = `${number},${number}`;
+            type DecimalFormatString = `${number},${number}`
 
             let props = JSON.parse(await filesystem.readAsync(path.join(cwd, 'newEntityProp.json'))) as {
-                name: string,
+                name: string
                 props: {
-                    prop: string,
-                    type: string,
-                    required?: true,
-                    default?: any,
-                    decimal_format_db?: DecimalFormatString,
-                    adicionalOptions?: string,
-                }[
-
-                ],
+                    prop: string
+                    type: string
+                    required?: true
+                    default?: any
+                    decimal_format_db?: DecimalFormatString
+                    adicionalOptions?: string
+                }[]
                 relationships?: {
-                    name: string,
-                    type: string,
-                    entity: string,
-                }[],
+                    name: string
+                    type: string
+                    entity: string
+                }[]
             }[]
             return props
             // For example:
@@ -558,36 +556,39 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
                         propCode += `
                         ${prop.prop}: Date;`
                     } // Pode adicionar mais tipos conforme necessário
-                    let valueDefault = prop.default;
+                    let valueDefault = prop.default
                     if (prop.default) {
-                        if(prop.default == 'new_date') {
-                            valueDefault = () => "CURRENT_TIMESTAMP";
+                        if (prop.default == 'new_date') {
+                            valueDefault = () => 'CURRENT_TIMESTAMP'
                         }
                     }
-                    let adicionalOptions = '';
+                    let adicionalOptions = ''
                     if (prop?.adicionalOptions) {
-                        adicionalOptions = `${prop?.adicionalOptions.replace(/{|}/g, '')}`;
+                        adicionalOptions = `${prop?.adicionalOptions.replace(/{|}/g, '')}`
                     }
                     if (prop?.decimal_format_db) {
                         let decimalFormat = `{
                             type: 'decimal',
-                            precision: ${prop?.decimal_format_db.split(',')[0]||20},
-                            scale: ${prop?.decimal_format_db.split(',')[1]||2},
+                            precision: ${prop?.decimal_format_db.split(',')[0] || 20},
+                            scale: ${prop?.decimal_format_db.split(',')[1] || 2},
                         }`
-                        if(adicionalOptions) {
-
-                            adicionalOptions += `, ${decimalFormat.replace(/{|}/g, '')}`;
+                        if (adicionalOptions) {
+                            adicionalOptions += `, ${decimalFormat.replace(/{|}/g, '')}`
                         } else {
-
-                            adicionalOptions = `${decimalFormat.replace(/{|}/g, '')}`;
+                            adicionalOptions = `${decimalFormat.replace(/{|}/g, '')}`
                         }
                     }
                     if (prop?.required && prop.default) {
-                        propCode = `@Column({ nullable: false,  default: '${valueDefault}' ${adicionalOptions? ', '+adicionalOptions+'' : ''}})\n  ${propCode.replace(`@Column()`, '')}`
+                        propCode = `@Column({ nullable: false,  default: '${valueDefault}' ${
+                            adicionalOptions ? ', ' + adicionalOptions + '' : ''
+                        }})\n  ${propCode.replace(`@Column()`, '')}`
                     } else if (prop?.required) {
-                        propCode = `@Column({ nullable: false ${adicionalOptions? ', '+adicionalOptions+'' : ''}})\n  ${propCode.replace(`@Column()`, '')}`
+                        propCode = `@Column({ nullable: false ${adicionalOptions ? ', ' + adicionalOptions + '' : ''}})\n  ${propCode.replace(`@Column()`, '')}`
                     } else if (prop.default) {
-                        propCode = `@Column({ default: '${valueDefault}' ${adicionalOptions? ', '+adicionalOptions+'' : ''} })\n  ${propCode.replace(`@Column()`, '')}`
+                        propCode = `@Column({ default: '${valueDefault}' ${adicionalOptions ? ', ' + adicionalOptions + '' : ''} })\n  ${propCode.replace(
+                            `@Column()`,
+                            ''
+                        )}`
                     } else if (prop?.adicionalOptions) {
                         propCode = `@Column({ ${adicionalOptions} })\n  ${propCode.replace(`@Column()`, '')}`
                     }
@@ -598,58 +599,53 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
         }
         function generateRelationshipsCode(relationships, entityData) {
             return relationships
-              .map((relationship) => {
-                let relCode = '';
+                .map((relationship) => {
+                    let relCode = ''
 
-                if (relationship.type === 'many-to-many') {
-                    relCode = `@ManyToMany(type => ${toTitleCase(relationship.entity)}Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(relationship.entity)})`;
+                    if (relationship.type === 'many-to-many') {
+                        relCode = `@ManyToMany(type => ${toTitleCase(relationship.entity)}Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(
+                            relationship.entity
+                        )})`
 
-                    // if (relationship.joinTable) {
-                        relCode += `\n  @JoinTable({\n`;
-                        relCode += `    name: '${toSnakeCase(entityData.name)}_${toSnakeCase(relationship.entity)}',\n`;
-                        relCode += `    joinColumn: {\n`;
-                        relCode += `        name: '${toSnakeCase(entityData.name)}_id',\n`;
-                        relCode += `        referencedColumnName: '${toSnakeCase(entityData.name)}_id',\n`;
-                        relCode += `    },\n`;
-                        relCode += `    inverseJoinColumn: {\n`;
-                        relCode += `        name: '${toSnakeCase(relationship.entity)}_id',\n`;
-                        relCode += `        referencedColumnName: '${toSnakeCase(relationship.entity)}_id',\n`;
-                        relCode += `    },\n`;
-                        relCode += `  })`;
-                    // }
+                        // if (relationship.joinTable) {
+                        relCode += `\n  @JoinTable({\n`
+                        relCode += `    name: '${toSnakeCase(entityData.name)}_${toSnakeCase(relationship.entity)}',\n`
+                        relCode += `    joinColumn: {\n`
+                        relCode += `        name: '${toSnakeCase(entityData.name)}_id',\n`
+                        relCode += `        referencedColumnName: '${toSnakeCase(entityData.name)}_id',\n`
+                        relCode += `    },\n`
+                        relCode += `    inverseJoinColumn: {\n`
+                        relCode += `        name: '${toSnakeCase(relationship.entity)}_id',\n`
+                        relCode += `        referencedColumnName: '${toSnakeCase(relationship.entity)}_id',\n`
+                        relCode += `    },\n`
+                        relCode += `  })`
+                        // }
 
-                    relCode += `\n  ${relationship.name}: ${toTitleCase(relationship.entity)}Entity[];`;
-                } else if (relationship.type === 'many-to-one') {
-                //   relCode = `@ManyToOne(type => ${
-                //     toTitleCase(relationship.entity)
-                //   }Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(relationship.entity)}.${entityData.name.toLowerCase()}s)\n  ${
-                //     relationship.name
-                //   }: ${toTitleCase(relationship.entity)}Entity;`;
-                  relCode = `@ManyToOne(type => ${
-                    toTitleCase(relationship.entity)
-                  }Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(relationship.entity)})\n
+                        relCode += `\n  ${relationship.name}: ${toTitleCase(relationship.entity)}Entity[];`
+                    } else if (relationship.type === 'many-to-one') {
+                        //   relCode = `@ManyToOne(type => ${
+                        //     toTitleCase(relationship.entity)
+                        //   }Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(relationship.entity)}.${entityData.name.toLowerCase()}s)\n  ${
+                        //     relationship.name
+                        //   }: ${toTitleCase(relationship.entity)}Entity;`;
+                        relCode = `@ManyToOne(type => ${toTitleCase(relationship.entity)}Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(
+                            relationship.entity
+                        )})\n
                     @JoinColumn({ name: '${toSnakeCase(relationship.name)}_id' }) \n
-                    ${
-                    relationship.name
-                  }: ${toTitleCase(relationship.entity)}Entity;`;
-                } else if (relationship.type === 'one-to-many') {
-                  relCode = `@OneToMany(type => ${
-                    toTitleCase(relationship.entity)
-                  }Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(relationship.entity)})\n  ${
-                    relationship.name
-                  }: ${toTitleCase(relationship.entity)}Entity[];`;
-                } else if (relationship.type === 'one-to-one') {
-                  relCode = `@OneToOne(type => ${
-                    toTitleCase(relationship.entity)
-                  }Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(relationship.entity)})\n  ${
-                    relationship.name
-                  }: ${toTitleCase(relationship.entity)}Entity;`;
-                }
+                    ${relationship.name}: ${toTitleCase(relationship.entity)}Entity;`
+                    } else if (relationship.type === 'one-to-many') {
+                        relCode = `@OneToMany(type => ${toTitleCase(relationship.entity)}Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(
+                            relationship.entity
+                        )})\n  ${relationship.name}: ${toTitleCase(relationship.entity)}Entity[];`
+                    } else if (relationship.type === 'one-to-one') {
+                        relCode = `@OneToOne(type => ${toTitleCase(relationship.entity)}Entity, ${toSnakeCase(relationship.entity)} => ${toSnakeCase(
+                            relationship.entity
+                        )})\n  ${relationship.name}: ${toTitleCase(relationship.entity)}Entity;`
+                    }
 
-                return relCode;
-              })
-              .join('\n\n');
-          }
-
+                    return relCode
+                })
+                .join('\n\n')
+        }
     },
 }

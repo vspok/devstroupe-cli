@@ -11,7 +11,7 @@
         "compile": "tsc -p .",
         "copy-templates": "copyfiles ./src/templates/** ./build/",
         "build": "npm run clean-build && npm run compile && npm run copy-templates",
-        "prepublishOnly": "npm build",
+        "prepublishOnly": "npm run build",
         "format": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix && prettier \"**/*.{js,jsx,ts,tsx,json}\" --write",
         "test": "jest",
         "watch": "jest --watch",
