@@ -10,13 +10,18 @@ export default {
     name: 'generate-entity',
     alias: ['ge'],
     description: 'Gerar arquivos nessesario pra uma entidade apartir de um array de propredades',
+
     run: async (toolbox: GluegunToolbox) => {
         const {
             print,
             print: { error, success },
+            parameters,
             filesystem,
         } = toolbox
-
+        let is_tenant:boolean = false;
+        if (parameters.first === 't' || parameters.first === 'tenant') {
+            is_tenant = true;
+        }
         // Check if the entity name is provided
         const cwd = process.cwd()
         let entities = await generateProperties()
@@ -34,11 +39,12 @@ export default {
                 continue
             }
             //paths cwd
-            const entitiesFolderPath = path.join(cwd, 'src', 'infra', 'database', 'typeorm', 'entities')
-            const repositoriesFolderPath = path.join(cwd, 'src', 'infra', 'database', 'typeorm', 'repositories')
-            const repositoriesInterfaceFolderPath = path.join(cwd, 'src', 'domain', 'repositories')
-            const modelsFolderPath = path.join(cwd, 'src', 'domain', 'models')
-            const mappersFolderPath = path.join(cwd, 'src', 'infra', 'database', 'typeorm', 'mappers')
+
+            const entitiesFolderPath = path.join(cwd, 'src', 'infra', 'database', 'typeorm', 'entities', is_tenant? 'tenanted':'')
+            const repositoriesFolderPath = path.join(cwd, 'src', 'infra', 'database', 'typeorm', 'repositories', is_tenant? 'tenanted':'')
+            const repositoriesInterfaceFolderPath = path.join(cwd, 'src', 'domain', 'repositories', is_tenant? 'tenanted':'')
+            const modelsFolderPath = path.join(cwd, 'src', 'domain', 'models', is_tenant? 'tenanted':'')
+            const mappersFolderPath = path.join(cwd, 'src', 'infra', 'database', 'typeorm', 'mappers', is_tenant? 'tenanted':'')
             const useCaseFolderPath = path.join(cwd, 'src', 'application', 'use-cases', entityNameArquivoCase)
             const databaseModuleFilePath = path.join(cwd, 'src', 'infra', 'database', 'database.module.ts')
             const httpModuleFilePath = path.join(cwd, 'src', 'infra', 'http', 'http.module.ts')
@@ -78,9 +84,10 @@ export default {
                 propsCode: propsCode,
                 relationshipsCode: relationshipsCode,
                 relationshipsImports: relationshipsImports,
+                is_tenant:is_tenant
             }
             const generatedCode = `
-        import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne,OneToOne, OneToMany, JoinTable, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+        import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne,OneToOne, OneToMany, JoinTable, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
         ${relationshipsImports}
         @Entity('${entityName}')
         export class ${templateData.entityNameTitleCase}Entity {
@@ -332,9 +339,9 @@ export default {
                 }
 
                 // Check if the import statement is already present in the module
-                const importStatement = `import { I${nameTitleCase}Repository } from 'src/domain/repositories/${entityNameArquivoCase}-repository';
-import { ${nameTitleCase}Repository } from './typeorm/repositories/${entityNameArquivoCase}-repository';
-import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCase}.entity';\n`
+                const importStatement = `import { I${nameTitleCase}Repository } from 'src/domain/repositories/${is_tenant? 'tenanted/' : ''}${entityNameArquivoCase}-repository';
+import { ${nameTitleCase}Repository } from './typeorm/repositories/${is_tenant? 'tenanted/' : ''}${entityNameArquivoCase}-repository';
+import { ${nameTitleCase}Entity } from './typeorm/entities/${is_tenant? 'tenanted/' : ''}${entityNameArquivoCase}.entity';\n`
                 if (!moduleContent.includes(importStatement)) {
                     // If the import is not present, add it at the top of the file
                     await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -375,19 +382,36 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCa
                 }
 
                 // Find the position of the TypeOrmModule.forFeature array in the module file
-                const TypeOrmModuleRegex = /TypeOrmModule.forFeature\(\s*\[[^\]]*\]/
-                const TypeOrmModuleMatch = moduleContent.match(TypeOrmModuleRegex)
 
-                if (!TypeOrmModuleMatch) {
-                    error('Could not find the "TypeOrmModule" array in the module.')
-                    continue
-                }
 
                 // Add the new provider to the "providers" and "exports" arrays
                 let updatedModuleContent = moduleContent
                     .replace(providersRegex, (match) => match.replace(']', ` ${contentToAdd} ]`))
                     .replace(exportsRegex, (match) => match.replace(']', ` I${nameTitleCase}Repository, ]`))
-                updatedModuleContent = updatedModuleContent.replace(TypeOrmModuleRegex, (match) => match.replace(']', ` ${nameTitleCase}Entity ]`))
+
+                if (is_tenant){
+                    // const exportsEntitys = await filesystem.readAsync(databaseModuleFilePath)
+                    const TypeOrmModuleRegex = /TENANTED_ENTITIES\s*\[[^\]]*\]/
+                    const TypeOrmModuleMatch = moduleContent.match(TypeOrmModuleRegex)
+
+                    if (TypeOrmModuleMatch) {
+                        updatedModuleContent = updatedModuleContent.replace(TypeOrmModuleRegex, (match) => match.replace(']', ` ${nameTitleCase}Entity ]`))
+                    } else {
+                        error('Could not find the "TypeOrmModule" array in the module.')
+
+                    }
+                } else {
+                    const TypeOrmModuleRegex = /TypeOrmModule.forFeature\(\s*\[[^\]]*\]/
+                    const TypeOrmModuleMatch = moduleContent.match(TypeOrmModuleRegex)
+
+                    if (TypeOrmModuleMatch) {
+                        updatedModuleContent = updatedModuleContent.replace(TypeOrmModuleRegex, (match) => match.replace(']', ` ${nameTitleCase}Entity ]`))
+                    } else {
+                        error('Could not find the "TypeOrmModule" array in the module.')
+
+                    }
+                }
+
                 success(`M017`)
 
                 // Overwrite the module file with the updated content

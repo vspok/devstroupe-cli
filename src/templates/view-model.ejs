@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
 
 export class <%= entityNameTitleCase %>ViewModel {
     @ApiProperty()
@@ -7,7 +7,7 @@ export class <%= entityNameTitleCase %>ViewModel {
 
     <% properties.forEach(prop => { -%>
         @ApiProperty()
-        <%= prop.prop %>:  <%= prop.type %>;
+        <%= prop.prop %>:  <%= prop.type %><%= prop.required ? '' : ' | null' %>;;
 
     <% }) -%>
 

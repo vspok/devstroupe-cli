@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ILogger } from 'src/domain/adapters/logger.interface';
-import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= entityNameArquivoCase %>';
-import { I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= entityNameArquivoCase %>-repository';
+import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
+import { I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>-repository';
 
 interface Find<%= entityNameTitleCase %>Request {
     filter: Partial<<%= entityNameTitleCase %>Model>;
