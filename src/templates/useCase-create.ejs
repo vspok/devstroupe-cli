@@ -20,9 +20,9 @@ export class Create<%= entityNameTitleCase %> {
 
     async execute(request: Create<%= entityNameTitleCase %>Request): Promise<Create<%= entityNameTitleCase %>Response> {
         const <%= entityName %> = new <%= entityNameTitleCase %>Model();
-        <% properties.forEach(prop => { -%>
-            <%= entityName %>.<%= prop.prop %> = request.<%= prop.prop %>;
-          <% }) -%>
+
+        Object.assign(<%= entityName %>, request);
+
         const created_<%= entityName %> = await this.<%= entityNameCamelCase %>Repository.create(<%= entityName %>);
 
         this.logger.log('create<%= entityNameTitleCase %>Cases execute', 'New <%= entityName %> have been created');
