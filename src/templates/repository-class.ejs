@@ -87,7 +87,7 @@ export class <%= entityNameTitleCase %>Repository implements I<%= entityNameTitl
                 const { direction, sort, page, limit, text, ...where } = filter;
                 if (where) {
                     queryBuilder = queryBuilder.andWhere(where);
-                    queryBuilder = factoryWhere<<%= entityNameTitleCase %>Entity, FilterTopicTip>(
+                    queryBuilder = factoryWhere<<%= entityNameTitleCase %>Entity, Filter<%= entityNameTitleCase %>>(
                         queryBuilder,
                         where,
                     );
