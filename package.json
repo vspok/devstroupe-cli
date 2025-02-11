@@ -1,6 +1,6 @@
 {
     "name": "devstroupe-cli",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "description": "devstroupe-cli CLI",
     "types": "build/types/types.d.ts",
     "bin": {
