@@ -55,9 +55,13 @@ export default {
                     relationships: entity.relationships || [],
                     propsCode: generatePropsCode(entity.props),
                     relationshipsCode: relationshipsCode,
-                    relationshipsImports: (entity.relationships || [])
-                        .map((rel) => `import { ${toTitleCase(rel.entity)}Entity } from './${toArquivoCase(rel.entity)}.entity';`)
-                        .join('\n'),
+                    relationshipsImports: Array.from(
+                        new Set(
+                            (entity.relationships || []).map(
+                                (rel) => `import { ${toTitleCase(rel.entity)}Entity } from './${toArquivoCase(rel.entity)}.entity';`
+                            )
+                        )
+                    ).join('\n'),
                     is_tenant: isTenant,
                 }
                 const generatedCode = `
