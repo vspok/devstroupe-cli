@@ -275,16 +275,16 @@ function generateRelationshipsCode(relationships: any[], entityData: any) {
 
 
 async function updateHttpModule(entityName: string, entityNameArquivoCase: string, nameTitleCase: string) {
-    const httpModuleFilePath = path.join(process.cwd(), 'src', 'infra', 'http', 'http.module.ts'); // Caminho do HttpModule
+    const httpModuleFilePath = path.join(process.cwd(), 'src', 'infra', 'http', 'http.module.ts'); // Path to HttpModule
 
     if (!fs.existsSync(httpModuleFilePath)) {
-        console.error(`Arquivo HttpModule não encontrado: ${httpModuleFilePath}`);
+        console.error(`HttpModule file not found: ${httpModuleFilePath}`);
         return;
     }
 
     const moduleContent = fs.readFileSync(httpModuleFilePath, 'utf-8');
 
-    // Adicionar os imports
+    // Generate imports
     const controllerImport = `import { ${nameTitleCase}Controller } from './controllers/${entityNameArquivoCase}.controller';`;
     const useCaseImports = `
 import { Create${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/create-${entityNameArquivoCase}';
@@ -294,7 +294,7 @@ import { FindMany${nameTitleCase} } from '../../application/use-cases/${entityNa
 import { Delete${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/delete-${entityNameArquivoCase}';
 `;
 
-    // Criar a variável de use cases
+    // Generate use cases constant
     const useCasesDeclaration = `const useCases${nameTitleCase} = [
     Create${nameTitleCase},
     Update${nameTitleCase},
@@ -303,7 +303,7 @@ import { Delete${nameTitleCase} } from '../../application/use-cases/${entityName
     Delete${nameTitleCase},
 ];`;
 
-    // Adicionar os imports ao início do arquivo
+    // Ensure imports are at the top
     let updatedContent = moduleContent;
     if (!moduleContent.includes(controllerImport)) {
         updatedContent = `${controllerImport}\n${updatedContent}`;
@@ -311,11 +311,19 @@ import { Delete${nameTitleCase} } from '../../application/use-cases/${entityName
     if (!moduleContent.includes(`Create${nameTitleCase}`)) {
         updatedContent = `${useCaseImports}\n${updatedContent}`;
     }
+
+    // Ensure use cases constant is declared after imports but before the module definition
+    const moduleStartIndex = updatedContent.indexOf('@Module');
     if (!moduleContent.includes(`const useCases${nameTitleCase}`)) {
-        updatedContent = `${useCasesDeclaration}\n\n${updatedContent}`;
+        const importsEndIndex = updatedContent.lastIndexOf('import', moduleStartIndex);
+        const nextLineIndex = updatedContent.indexOf('\n', importsEndIndex) + 1;
+        updatedContent =
+            updatedContent.slice(0, nextLineIndex) +
+            `\n${useCasesDeclaration}\n` +
+            updatedContent.slice(nextLineIndex);
     }
 
-    // Adicionar os providers e controllers ao módulo
+    // Add controller and providers to the module
     const controllerRegex = /controllers:\s*\[([^\]]*)\]/;
     const providerRegex = /providers:\s*\[([^\]]*)\]/;
 
@@ -324,7 +332,7 @@ import { Delete${nameTitleCase} } from '../../application/use-cases/${entityName
             controllerRegex,
             (match, p1) => {
                 const controllers = p1.split(',').map((item) => item.trim()).filter(Boolean);
-                return `controllers: [${[...Array.from(new Set(controllers)), `${nameTitleCase}Controller`].join(', ')}]`;
+                return `controllers: [${Array.from(new Set([...controllers, `${nameTitleCase}Controller`])).join(', ')}]`;
             }
         );
     }
@@ -334,16 +342,16 @@ import { Delete${nameTitleCase} } from '../../application/use-cases/${entityName
             providerRegex,
             (match, p1) => {
                 const providers = p1.split(',').map((item) => item.trim()).filter(Boolean);
-                return `providers: [${[...Array.from(new Set(providers)), `...useCases${nameTitleCase}`].join(', ')}]`;
+                return `providers: [${Array.from(new Set([...providers, `...useCases${nameTitleCase}`])).join(', ')}]`;
             }
         );
     }
 
-    // Salvar o arquivo atualizado
+    // Save the updated file
     fs.writeFileSync(httpModuleFilePath, updatedContent, 'utf-8');
-    console.log(`HttpModule atualizado com sucesso: ${httpModuleFilePath}`);
+    console.log(`HttpModule updated successfully: ${httpModuleFilePath}`);
 
-    // Formatar o arquivo com Prettier
+    // Format the file with Prettier
     await prettifyFile(httpModuleFilePath);
 }
 
