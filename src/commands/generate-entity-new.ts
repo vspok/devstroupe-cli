@@ -33,6 +33,7 @@ export default {
                     models: path.join(cwd, 'src', 'domain', 'models', isTenant ? 'tenanted' : ''),
                     useCases: path.join(cwd, 'src', 'application', 'use-cases', entityNameArquivoCase),
                     dtos: path.join(cwd, 'src', 'infra', 'http', 'dtos'),
+                    viewModels: path.join(cwd,'src', 'infra', 'http', 'view-models'),
                     controllers: path.join(cwd, 'src', 'infra', 'http', 'controllers'),
                 }
 
@@ -94,6 +95,7 @@ export default {
                 await generateFile(path.join(paths.dtos, `create-${entityNameArquivoCase}-body.ts`), 'dto-create-body.ejs', templateData)
                 await generateFile(path.join(paths.dtos, `update-${entityNameArquivoCase}-body.ts`), 'dto-update-body.ejs', templateData)
 
+                await generateFile(path.join(paths.viewModels, `${entityNameArquivoCase}-view-model.ts`), 'view-model.ejs', templateData)
                 // Gerar Use Cases
                 if (!fs.existsSync(paths.useCases)) fs.mkdirSync(paths.useCases, { recursive: true })
                 const useCases = ['create', 'update', 'find', 'find-many', 'delete']
@@ -103,6 +105,10 @@ export default {
 
                 // Gerar Controller
                 await generateFile(path.join(paths.controllers, `${entityNameArquivoCase}.controller.ts`), 'controller.ejs', templateData)
+
+                // Atualizar o arquivo do módulo
+                await updateHttpModule(entityName, entityNameArquivoCase, nameTitleCase);
+                await updateDatabaseModule(entityName, entityNameArquivoCase, nameTitleCase);
 
                 print.success(`Arquivos para "${entityName}" criados com sucesso.`)
             }
@@ -261,4 +267,155 @@ function generateRelationshipsCode(relationships: any[], entityData: any) {
             return relCode
         })
         .join('\n\n')
+}
+
+
+async function updateHttpModule(entityName: string, entityNameArquivoCase: string, nameTitleCase: string) {
+    const httpModuleFilePath = path.join(process.cwd(), 'src', 'infra', 'http', 'http.module.ts'); // Caminho do HttpModule
+
+    if (!fs.existsSync(httpModuleFilePath)) {
+        console.error(`Arquivo HttpModule não encontrado: ${httpModuleFilePath}`);
+        return;
+    }
+
+    const moduleContent = fs.readFileSync(httpModuleFilePath, 'utf-8');
+
+    // Adicionar os imports
+    const controllerImport = `import { ${nameTitleCase}Controller } from './controllers/${entityNameArquivoCase}.controller';`;
+    const useCaseImports = `
+import { Create${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/create-${entityNameArquivoCase}';
+import { Update${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/update-${entityNameArquivoCase}';
+import { Find${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/find-${entityNameArquivoCase}';
+import { FindMany${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/find-many-${entityNameArquivoCase}';
+import { Delete${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/delete-${entityNameArquivoCase}';
+`;
+
+    // Criar a variável de use cases
+    const useCasesDeclaration = `const useCases${nameTitleCase} = [
+    Create${nameTitleCase},
+    Update${nameTitleCase},
+    Find${nameTitleCase},
+    FindMany${nameTitleCase},
+    Delete${nameTitleCase},
+];`;
+
+    // Adicionar os imports ao início do arquivo
+    let updatedContent = moduleContent;
+    if (!moduleContent.includes(controllerImport)) {
+        updatedContent = `${controllerImport}\n${updatedContent}`;
+    }
+    if (!moduleContent.includes(`Create${nameTitleCase}`)) {
+        updatedContent = `${useCaseImports}\n${updatedContent}`;
+    }
+    if (!moduleContent.includes(`const useCases${nameTitleCase}`)) {
+        updatedContent = `${useCasesDeclaration}\n\n${updatedContent}`;
+    }
+
+    // Adicionar os providers e controllers ao módulo
+    const controllerRegex = /controllers:\s*\[([^\]]*)\]/;
+    const providerRegex = /providers:\s*\[([^\]]*)\]/;
+
+    if (controllerRegex.test(updatedContent)) {
+        updatedContent = updatedContent.replace(
+            controllerRegex,
+            (match, p1) => {
+                const controllers = p1.split(',').map((item) => item.trim()).filter(Boolean);
+                return `controllers: [${[...Array.from(new Set(controllers)), `${nameTitleCase}Controller`].join(', ')}]`;
+            }
+        );
+    }
+
+    if (providerRegex.test(updatedContent)) {
+        updatedContent = updatedContent.replace(
+            providerRegex,
+            (match, p1) => {
+                const providers = p1.split(',').map((item) => item.trim()).filter(Boolean);
+                return `providers: [${[...Array.from(new Set(providers)), `...useCases${nameTitleCase}`].join(', ')}]`;
+            }
+        );
+    }
+
+    // Salvar o arquivo atualizado
+    fs.writeFileSync(httpModuleFilePath, updatedContent, 'utf-8');
+    console.log(`HttpModule atualizado com sucesso: ${httpModuleFilePath}`);
+
+    // Formatar o arquivo com Prettier
+    await prettifyFile(httpModuleFilePath);
+}
+
+async function updateDatabaseModule(entityName: string, entityNameArquivoCase: string, nameTitleCase: string) {
+    const databaseModuleFilePath = path.join(process.cwd(), 'src', 'infra', 'database', 'database.module.ts'); // Caminho do DatabaseModule
+
+    if (!fs.existsSync(databaseModuleFilePath)) {
+        console.error(`Arquivo DatabaseModule não encontrado: ${databaseModuleFilePath}`);
+        return;
+    }
+
+    const moduleContent = fs.readFileSync(databaseModuleFilePath, 'utf-8');
+
+    // Adicionar os imports
+    const repositoryInterfaceImport = `import { I${nameTitleCase}Repository } from '../../domain/repositories/${entityNameArquivoCase}-repository';`;
+    const repositoryClassImport = `import { ${nameTitleCase}Repository } from './typeorm/repositories/${entityNameArquivoCase}-repository';`;
+    const entityImport = `import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCase}.entity';`;
+
+    // Criar o provider para inversão de dependência
+    const providerDeclaration = `{
+        provide: I${nameTitleCase}Repository,
+        useClass: ${nameTitleCase}Repository,
+    }`;
+
+    // Adicionar os imports ao início do arquivo
+    let updatedContent = moduleContent;
+    if (!moduleContent.includes(repositoryInterfaceImport)) {
+        updatedContent = `${repositoryInterfaceImport}\n${updatedContent}`;
+    }
+    if (!moduleContent.includes(repositoryClassImport)) {
+        updatedContent = `${repositoryClassImport}\n${updatedContent}`;
+    }
+    if (!moduleContent.includes(entityImport)) {
+        updatedContent = `${entityImport}\n${updatedContent}`;
+    }
+
+    // Adicionar a entidade ao TypeOrmModule.forFeature
+    const typeOrmFeatureRegex = /TypeOrmModule\.forFeature\(\[([^\]]*)\]\)/;
+    if (typeOrmFeatureRegex.test(updatedContent)) {
+        updatedContent = updatedContent.replace(
+            typeOrmFeatureRegex,
+            (match, p1) => {
+                const cleanedFeatures = p1.split(',').map(item => item.trim()).filter(Boolean).join(', ');
+                return `TypeOrmModule.forFeature([${cleanedFeatures}${cleanedFeatures ? ', ' : ''}${nameTitleCase}Entity])`;
+            }
+        );
+    }
+
+    // Adicionar o provider e exportar a interface
+    const providerRegex = /providers:\s*\[([^\]]*)\]/;
+    const exportRegex = /exports:\s*\[([^\]]*)\]/;
+
+    if (providerRegex.test(updatedContent)) {
+        updatedContent = updatedContent.replace(
+            providerRegex,
+            (match, p1) => {
+                const cleanedProviders = p1.split(',').map(item => item.trim()).filter(Boolean).join(', ');
+                return `providers: [${cleanedProviders}${cleanedProviders ? ', ' : ''}${providerDeclaration}]`;
+            }
+        );
+    }
+
+    if (exportRegex.test(updatedContent)) {
+        updatedContent = updatedContent.replace(
+            exportRegex,
+            (match, p1) => {
+                const cleanedExports = p1.split(',').map(item => item.trim()).filter(Boolean).join(', ');
+                return `exports: [${cleanedExports}${cleanedExports ? ', ' : ''}I${nameTitleCase}Repository]`;
+            }
+        );
+    }
+
+    // Salvar o arquivo atualizado
+    fs.writeFileSync(databaseModuleFilePath, updatedContent, 'utf-8');
+    console.log(`DatabaseModule atualizado com sucesso: ${databaseModuleFilePath}`);
+
+    // Formatar o arquivo com Prettier
+    await prettifyFile(databaseModuleFilePath);
 }
