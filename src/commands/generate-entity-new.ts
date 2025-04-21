@@ -14,6 +14,8 @@ export default {
         const cwd = process.cwd()
 
         try {
+            const httpModuleFilePath = path.join(cwd, 'src', 'infra', 'http', 'http.module.ts');
+            const databaseModuleFilePath = path.join(cwd, 'src', 'infra', 'database', 'database.module.ts');
             const entities = await generateProperties()
             for (const entity of entities) {
                 const entityName = toSnakeCase(entity.name)
@@ -116,6 +118,9 @@ export default {
 
                 print.success(`Arquivos para "${entityName}" criados com sucesso.`)
             }
+            // Formatar o arquivo com Prettier
+            await prettifyFile(httpModuleFilePath)
+            await prettifyFile(databaseModuleFilePath);
         } catch (error) {
             print.error(`Erro ao gerar entidades: ${error.message}`)
         }
@@ -350,9 +355,6 @@ import { Delete${nameTitleCase} } from '../../application/use-cases/${entityName
     // Save the updated file
     fs.writeFileSync(httpModuleFilePath, updatedContent, 'utf-8');
     console.log(`HttpModule updated successfully: ${httpModuleFilePath}`);
-
-    // Format the file with Prettier
-    await prettifyFile(httpModuleFilePath);
 }
 
 async function updateDatabaseModule(entityName: string, entityNameArquivoCase: string, nameTitleCase: string) {
@@ -427,7 +429,4 @@ async function updateDatabaseModule(entityName: string, entityNameArquivoCase: s
     // Salvar o arquivo atualizado
     fs.writeFileSync(databaseModuleFilePath, updatedContent, 'utf-8');
     console.log(`DatabaseModule atualizado com sucesso: ${databaseModuleFilePath}`);
-
-    // Formatar o arquivo com Prettier
-    await prettifyFile(databaseModuleFilePath);
 }
