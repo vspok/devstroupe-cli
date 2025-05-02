@@ -14,8 +14,8 @@ export default {
         const cwd = process.cwd()
 
         try {
-            const httpModuleFilePath = path.join(cwd, 'src', 'infra', 'http', 'http.module.ts');
-            const databaseModuleFilePath = path.join(cwd, 'src', 'infra', 'database', 'database.module.ts');
+            const httpModuleFilePath = path.join(cwd, 'src', 'infra', 'http', 'http.module.ts')
+            const databaseModuleFilePath = path.join(cwd, 'src', 'infra', 'database', 'database.module.ts')
             const entities = await generateProperties()
             for (const entity of entities) {
                 const entityName = toSnakeCase(entity.name)
@@ -35,7 +35,7 @@ export default {
                     models: path.join(cwd, 'src', 'domain', 'models', isTenant ? 'tenanted' : ''),
                     useCases: path.join(cwd, 'src', 'application', 'use-cases', entityNameArquivoCase),
                     dtos: path.join(cwd, 'src', 'infra', 'http', 'dtos'),
-                    viewModels: path.join(cwd,'src', 'infra', 'http', 'view-models'),
+                    viewModels: path.join(cwd, 'src', 'infra', 'http', 'view-models'),
                     controllers: path.join(cwd, 'src', 'infra', 'http', 'controllers'),
                 }
 
@@ -113,14 +113,14 @@ export default {
                 await generateFile(path.join(paths.controllers, `${entityNameArquivoCase}.controller.ts`), 'controller.ejs', templateData)
 
                 // Atualizar o arquivo do módulo
-                await updateHttpModule(entityName, entityNameArquivoCase, nameTitleCase);
-                await updateDatabaseModule(entityName, entityNameArquivoCase, nameTitleCase);
+                await updateHttpModule(entityName, entityNameArquivoCase, nameTitleCase)
+                await updateDatabaseModule(entityName, entityNameArquivoCase, nameTitleCase)
 
                 print.success(`Arquivos para "${entityName}" criados com sucesso.`)
             }
             // Formatar o arquivo com Prettier
             await prettifyFile(httpModuleFilePath)
-            await prettifyFile(databaseModuleFilePath);
+            await prettifyFile(databaseModuleFilePath)
         } catch (error) {
             print.error(`Erro ao gerar entidades: ${error.message}`)
         }
@@ -213,8 +213,7 @@ function generatePropsCode(props: any[]) {
             const defaultValue = prop.default === 'new_date' ? 'CURRENT_TIMESTAMP' : prop.default
             const additionalOptions = prop.adicionalOptions?.replace(/{|}/g, '') || ''
             const decimalFormat =
-                prop.decimal_format_db &&
-                `{ type: 'decimal', precision: ${prop.decimal_format_db.split(',')[0]}, scale: ${prop.decimal_format_db.split(',')[1]} }`
+                prop.decimal_format_db && `type: 'decimal', precision: ${prop.decimal_format_db.split(',')[0]}, scale: ${prop.decimal_format_db.split(',')[1]} `
 
             const columnOptions = [prop.required && 'nullable: false', defaultValue && `default: '${defaultValue}'`, additionalOptions, decimalFormat]
                 .filter(Boolean)
@@ -278,26 +277,25 @@ function generateRelationshipsCode(relationships: any[], entityData: any) {
         .join('\n\n')
 }
 
-
 async function updateHttpModule(entityName: string, entityNameArquivoCase: string, nameTitleCase: string) {
-    const httpModuleFilePath = path.join(process.cwd(), 'src', 'infra', 'http', 'http.module.ts'); // Path to HttpModule
+    const httpModuleFilePath = path.join(process.cwd(), 'src', 'infra', 'http', 'http.module.ts') // Path to HttpModule
 
     if (!fs.existsSync(httpModuleFilePath)) {
-        console.error(`HttpModule file not found: ${httpModuleFilePath}`);
-        return;
+        console.error(`HttpModule file not found: ${httpModuleFilePath}`)
+        return
     }
 
-    const moduleContent = fs.readFileSync(httpModuleFilePath, 'utf-8');
+    const moduleContent = fs.readFileSync(httpModuleFilePath, 'utf-8')
 
     // Generate imports
-    const controllerImport = `import { ${nameTitleCase}Controller } from './controllers/${entityNameArquivoCase}.controller';`;
+    const controllerImport = `import { ${nameTitleCase}Controller } from './controllers/${entityNameArquivoCase}.controller';`
     const useCaseImports = `
 import { Create${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/create-${entityNameArquivoCase}';
 import { Update${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/update-${entityNameArquivoCase}';
 import { Find${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/find-${entityNameArquivoCase}';
 import { FindMany${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/find-many-${entityNameArquivoCase}';
 import { Delete${nameTitleCase} } from '../../application/use-cases/${entityNameArquivoCase}/delete-${entityNameArquivoCase}';
-`;
+`
 
     // Generate use cases constant
     const useCasesDeclaration = `const useCases${nameTitleCase} = [
@@ -306,127 +304,127 @@ import { Delete${nameTitleCase} } from '../../application/use-cases/${entityName
     Find${nameTitleCase},
     FindMany${nameTitleCase},
     Delete${nameTitleCase},
-];`;
+];`
 
     // Ensure imports are at the top
-    let updatedContent = moduleContent;
+    let updatedContent = moduleContent
     if (!moduleContent.includes(controllerImport)) {
-        updatedContent = `${controllerImport}\n${updatedContent}`;
+        updatedContent = `${controllerImport}\n${updatedContent}`
     }
     if (!moduleContent.includes(`Create${nameTitleCase}`)) {
-        updatedContent = `${useCaseImports}\n${updatedContent}`;
+        updatedContent = `${useCaseImports}\n${updatedContent}`
     }
 
     // Ensure use cases constant is declared after imports but before the module definition
-    const moduleStartIndex = updatedContent.indexOf('@Module');
+    const moduleStartIndex = updatedContent.indexOf('@Module')
     if (!moduleContent.includes(`const useCases${nameTitleCase}`)) {
-        const importsEndIndex = updatedContent.lastIndexOf('import', moduleStartIndex);
-        const nextLineIndex = updatedContent.indexOf('\n', importsEndIndex) + 1;
-        updatedContent =
-            updatedContent.slice(0, nextLineIndex) +
-            `\n${useCasesDeclaration}\n` +
-            updatedContent.slice(nextLineIndex);
+        const importsEndIndex = updatedContent.lastIndexOf('import', moduleStartIndex)
+        const nextLineIndex = updatedContent.indexOf('\n', importsEndIndex) + 1
+        updatedContent = updatedContent.slice(0, nextLineIndex) + `\n${useCasesDeclaration}\n` + updatedContent.slice(nextLineIndex)
     }
 
     // Add controller and providers to the module
-    const controllerRegex = /controllers:\s*\[([^\]]*)\]/;
-    const providerRegex = /providers:\s*\[([^\]]*)\]/;
+    const controllerRegex = /controllers:\s*\[([^\]]*)\]/
+    const providerRegex = /providers:\s*\[([^\]]*)\]/
 
     if (controllerRegex.test(updatedContent)) {
-        updatedContent = updatedContent.replace(
-            controllerRegex,
-            (match, p1) => {
-                const controllers = p1.split(',').map((item) => item.trim()).filter(Boolean);
-                return `controllers: [${Array.from(new Set([...controllers, `${nameTitleCase}Controller`])).join(', ')}]`;
-            }
-        );
+        updatedContent = updatedContent.replace(controllerRegex, (match, p1) => {
+            const controllers = p1
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean)
+            return `controllers: [${Array.from(new Set([...controllers, `${nameTitleCase}Controller`])).join(', ')}]`
+        })
     }
 
     if (providerRegex.test(updatedContent)) {
-        updatedContent = updatedContent.replace(
-            providerRegex,
-            (match, p1) => {
-                const providers = p1.split(',').map((item) => item.trim()).filter(Boolean);
-                return `providers: [${Array.from(new Set([...providers, `...useCases${nameTitleCase}`])).join(', ')}]`;
-            }
-        );
+        updatedContent = updatedContent.replace(providerRegex, (match, p1) => {
+            const providers = p1
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean)
+            return `providers: [${Array.from(new Set([...providers, `...useCases${nameTitleCase}`])).join(', ')}]`
+        })
     }
 
     // Save the updated file
-    fs.writeFileSync(httpModuleFilePath, updatedContent, 'utf-8');
-    console.log(`HttpModule updated successfully: ${httpModuleFilePath}`);
+    fs.writeFileSync(httpModuleFilePath, updatedContent, 'utf-8')
+    console.log(`HttpModule updated successfully: ${httpModuleFilePath}`)
 }
 
 async function updateDatabaseModule(entityName: string, entityNameArquivoCase: string, nameTitleCase: string) {
-    const databaseModuleFilePath = path.join(process.cwd(), 'src', 'infra', 'database', 'database.module.ts'); // Caminho do DatabaseModule
+    const databaseModuleFilePath = path.join(process.cwd(), 'src', 'infra', 'database', 'database.module.ts') // Caminho do DatabaseModule
 
     if (!fs.existsSync(databaseModuleFilePath)) {
-        console.error(`Arquivo DatabaseModule não encontrado: ${databaseModuleFilePath}`);
-        return;
+        console.error(`Arquivo DatabaseModule não encontrado: ${databaseModuleFilePath}`)
+        return
     }
 
-    const moduleContent = fs.readFileSync(databaseModuleFilePath, 'utf-8');
+    const moduleContent = fs.readFileSync(databaseModuleFilePath, 'utf-8')
 
     // Adicionar os imports
-    const repositoryInterfaceImport = `import { I${nameTitleCase}Repository } from '../../domain/repositories/${entityNameArquivoCase}-repository';`;
-    const repositoryClassImport = `import { ${nameTitleCase}Repository } from './typeorm/repositories/${entityNameArquivoCase}-repository';`;
-    const entityImport = `import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCase}.entity';`;
+    const repositoryInterfaceImport = `import { I${nameTitleCase}Repository } from '../../domain/repositories/${entityNameArquivoCase}-repository';`
+    const repositoryClassImport = `import { ${nameTitleCase}Repository } from './typeorm/repositories/${entityNameArquivoCase}-repository';`
+    const entityImport = `import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCase}.entity';`
 
     // Criar o provider para inversão de dependência
     const providerDeclaration = `{
         provide: I${nameTitleCase}Repository,
         useClass: ${nameTitleCase}Repository,
-    }`;
+    }`
 
     // Adicionar os imports ao início do arquivo
-    let updatedContent = moduleContent;
+    let updatedContent = moduleContent
     if (!moduleContent.includes(repositoryInterfaceImport)) {
-        updatedContent = `${repositoryInterfaceImport}\n${updatedContent}`;
+        updatedContent = `${repositoryInterfaceImport}\n${updatedContent}`
     }
     if (!moduleContent.includes(repositoryClassImport)) {
-        updatedContent = `${repositoryClassImport}\n${updatedContent}`;
+        updatedContent = `${repositoryClassImport}\n${updatedContent}`
     }
     if (!moduleContent.includes(entityImport)) {
-        updatedContent = `${entityImport}\n${updatedContent}`;
+        updatedContent = `${entityImport}\n${updatedContent}`
     }
 
     // Adicionar a entidade ao TypeOrmModule.forFeature
-    const typeOrmFeatureRegex = /TypeOrmModule\.forFeature\(\[([^\]]*)\]\)/;
+    const typeOrmFeatureRegex = /TypeOrmModule\.forFeature\(\[([^\]]*)\]\)/
     if (typeOrmFeatureRegex.test(updatedContent)) {
-        updatedContent = updatedContent.replace(
-            typeOrmFeatureRegex,
-            (match, p1) => {
-                const cleanedFeatures = p1.split(',').map(item => item.trim()).filter(Boolean).join(', ');
-                return `TypeOrmModule.forFeature([${cleanedFeatures}${cleanedFeatures ? ', ' : ''}${nameTitleCase}Entity])`;
-            }
-        );
+        updatedContent = updatedContent.replace(typeOrmFeatureRegex, (match, p1) => {
+            const cleanedFeatures = p1
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean)
+                .join(', ')
+            return `TypeOrmModule.forFeature([${cleanedFeatures}${cleanedFeatures ? ', ' : ''}${nameTitleCase}Entity])`
+        })
     }
 
     // Adicionar o provider e exportar a interface
-    const providerRegex = /providers:\s*\[([^\]]*)\]/;
-    const exportRegex = /exports:\s*\[([^\]]*)\]/;
+    const providerRegex = /providers:\s*\[([^\]]*)\]/
+    const exportRegex = /exports:\s*\[([^\]]*)\]/
 
     if (providerRegex.test(updatedContent)) {
-        updatedContent = updatedContent.replace(
-            providerRegex,
-            (match, p1) => {
-                const cleanedProviders = p1.split(',').map(item => item.trim()).filter(Boolean).join(', ');
-                return `providers: [${cleanedProviders}${cleanedProviders ? ', ' : ''}${providerDeclaration}]`;
-            }
-        );
+        updatedContent = updatedContent.replace(providerRegex, (match, p1) => {
+            const cleanedProviders = p1
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean)
+                .join(', ')
+            return `providers: [${cleanedProviders}${cleanedProviders ? ', ' : ''}${providerDeclaration}]`
+        })
     }
 
     if (exportRegex.test(updatedContent)) {
-        updatedContent = updatedContent.replace(
-            exportRegex,
-            (match, p1) => {
-                const cleanedExports = p1.split(',').map(item => item.trim()).filter(Boolean).join(', ');
-                return `exports: [${cleanedExports}${cleanedExports ? ', ' : ''}I${nameTitleCase}Repository]`;
-            }
-        );
+        updatedContent = updatedContent.replace(exportRegex, (match, p1) => {
+            const cleanedExports = p1
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean)
+                .join(', ')
+            return `exports: [${cleanedExports}${cleanedExports ? ', ' : ''}I${nameTitleCase}Repository]`
+        })
     }
 
     // Salvar o arquivo atualizado
-    fs.writeFileSync(databaseModuleFilePath, updatedContent, 'utf-8');
-    console.log(`DatabaseModule atualizado com sucesso: ${databaseModuleFilePath}`);
+    fs.writeFileSync(databaseModuleFilePath, updatedContent, 'utf-8')
+    console.log(`DatabaseModule atualizado com sucesso: ${databaseModuleFilePath}`)
 }
