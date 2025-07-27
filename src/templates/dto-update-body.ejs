@@ -5,7 +5,7 @@ export class Update<%= entityNameTitleCase %>Body {
     <% properties.forEach(prop => { -%>
         @ApiProperty({ required: false })
         @IsOptional()
-        <%= prop.prop %>: <%= prop.type %><%= prop.required ? '' : ' | null' %>;;
+        <%= prop.prop %>: <%= prop.typeTransform ? prop.typeTransform : prop.type %><%= prop.required ? '' : ' | null' %>;
 
       <% }) -%>
 }

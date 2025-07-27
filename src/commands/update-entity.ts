@@ -165,20 +165,23 @@ async function updateDtoFile(filePath: string, newFields: any[], dtoType: string
 function generatePropsCode(fields: any[]): string {
     return fields
         .map((field) => {
-            let propCode = `@Column()`
-            if (field.type === 'string') {
-                propCode += `\n  ${field.name}: string;`
-            } else if (field.type === 'number') {
-                propCode += `\n  ${field.name}: number;`
-            } else if (field.type === 'boolean') {
-                propCode += `\n  ${field.name}: boolean;`
-            } else if (field.type === 'Date') {
-                propCode += `\n  ${field.name}: Date;`
-            }
+            // Cria dinamicamente o objeto de opções da coluna
+            const columnOptions: Record<string, any> = {}
 
             if (field.required) {
-                propCode = `@Column({ nullable: false })\n  ${propCode.replace('@Column()', '')}`
+                columnOptions.nullable = false
+            } else {
+                columnOptions.nullable = true
             }
+
+            // Monta a string das opções do decorator
+            const optionsString = Object.keys(columnOptions).length
+                ? `{ ${Object.entries(columnOptions)
+                      .map(([k, v]) => (typeof v === 'string' ? `${k}: '${v}'` : `${k}: ${JSON.stringify(v)}`))
+                      .join(', ')} }`
+                : ''
+
+            let propCode = optionsString ? `@Column(${optionsString})\n  ${field.name}: ${field.type};` : `@Column()\n  ${field.name}: ${field.type};`
 
             return propCode
         })

@@ -46,6 +46,9 @@ export default {
                     print.error('Entidade ou repositório com este nome já existe.')
                     continue
                 }
+
+                entity.props = typeTransform(entity.props)
+
                 const relationshipsCode = generateRelationshipsCode(entity.relationships || [], entity)
                 const templateData = {
                     entityName,
@@ -114,7 +117,7 @@ export default {
 
                 // Atualizar o arquivo do módulo
                 await updateHttpModule(entityName, entityNameArquivoCase, nameTitleCase)
-                await updateDatabaseModule(entityName, entityNameArquivoCase, nameTitleCase)
+                await updateDatabaseModule(entityName, entityNameArquivoCase, nameTitleCase, isTenant)
 
                 print.success(`Arquivos para "${entityName}" criados com sucesso.`)
             }
@@ -125,6 +128,25 @@ export default {
             print.error(`Erro ao gerar entidades: ${error.message}`)
         }
     },
+}
+
+const typeTransform = (props: any[]) => {
+    return props.map((prop) => {
+        if (prop.type === 'string') {
+            prop.typeTransform = 'string'
+        } else if (['number', 'float', 'double'].includes(prop.type)) {
+            prop.typeTransform = 'number'
+        } else if (['boolean', 'bool', 'int'].includes(prop.type)) {
+            prop.typeTransform = 'boolean'
+        } else if (prop.type === 'Date' || prop.type === 'date') {
+            prop.typeTransform = 'Date'
+        } else if (prop.type === 'json') {
+            prop.typeTransform = 'any'
+        } else {
+            prop.typeTransform = 'string'
+        }
+        return prop
+    })
 }
 
 async function generateFile(filePath: string, templateName: string, data: any) {
@@ -205,21 +227,52 @@ function generatePropsCode(props: any[]) {
     return props
         .map((prop) => {
             let propCode = '@Column()'
+            const columnOptions: Record<string, any> = {}
+
             if (prop.type === 'string') propCode += `\n  ${prop.prop}: string;`
-            else if (prop.type === 'number') propCode += `\n  ${prop.prop}: number;`
-            else if (prop.type === 'boolean') propCode += `\n  ${prop.prop}: boolean;`
-            else if (prop.type === 'Date') propCode += `\n  ${prop.prop}: Date;`
+            else if (['number', 'float', 'double'].includes(prop.type)) propCode += `\n  ${prop.prop}: ${prop.typeTransform};`
+            else if (['boolean', 'bool', 'int'].includes(prop.type)) propCode += `\n  ${prop.prop}: ${prop.typeTransform};`
+            else if (prop.type === 'Date' || prop.type === 'date') propCode += `\n  ${prop.prop}: ${prop.typeTransform};`
+            else if (prop.type === 'json') {
+                propCode += `\n  ${prop.prop}: ${prop.typeTransform};`
+                columnOptions.type = 'json'
+            } else propCode += `\n  ${prop.prop}: ${prop.typeTransform};`
 
-            const defaultValue = prop.default === 'new_date' ? 'CURRENT_TIMESTAMP' : prop.default
-            const additionalOptions = prop.adicionalOptions?.replace(/{|}/g, '') || ''
-            const decimalFormat =
-                prop.decimal_format_db && `type: 'decimal', precision: ${prop.decimal_format_db.split(',')[0]}, scale: ${prop.decimal_format_db.split(',')[1]} `
+            if (prop.required) {
+                columnOptions.nullable = false
+            } else {
+                columnOptions.nullable = true
+            }
 
-            const columnOptions = [prop.required && 'nullable: false', defaultValue && `default: '${defaultValue}'`, additionalOptions, decimalFormat]
-                .filter(Boolean)
-                .join(', ')
+            if (prop.default !== undefined) {
+                columnOptions.default = prop.default === 'new_date' ? 'CURRENT_TIMESTAMP' : prop.default
+            }
 
-            if (columnOptions) propCode = `@Column({ ${columnOptions} })\n  ${propCode.replace('@Column()', '')}`
+            if (prop.adicionalOptions) {
+                try {
+                    const parsed = eval('({' + prop.adicionalOptions.replace(/{|}/g, '') + '})')
+                    Object.assign(columnOptions, parsed)
+                } catch {
+                    // Se falhar, ignora
+                }
+            }
+
+            if (prop.decimal_format_db) {
+                const [precision, scale] = prop.decimal_format_db.split(',')
+                columnOptions.type = 'decimal'
+                columnOptions.precision = Number(precision)
+                columnOptions.scale = Number(scale)
+            }
+
+            const optionsString = Object.keys(columnOptions).length
+                ? `{ ${Object.entries(columnOptions)
+                      .map(([k, v]) =>
+                          typeof v === 'string' ? `${k}: '${v}'` : typeof v === 'function' ? `${k}: ${v.toString()}` : `${k}: ${JSON.stringify(v)}`
+                      )
+                      .join(', ')} }`
+                : ''
+
+            if (optionsString) propCode = `@Column(${optionsString})\n  ${propCode.replace('@Column()', '')}`
 
             return propCode
         })
@@ -352,7 +405,7 @@ import { Delete${nameTitleCase} } from '../../application/use-cases/${entityName
     console.log(`HttpModule updated successfully: ${httpModuleFilePath}`)
 }
 
-async function updateDatabaseModule(entityName: string, entityNameArquivoCase: string, nameTitleCase: string) {
+async function updateDatabaseModule(entityName: string, entityNameArquivoCase: string, nameTitleCase: string, isTenant: boolean) {
     const databaseModuleFilePath = path.join(process.cwd(), 'src', 'infra', 'database', 'database.module.ts') // Caminho do DatabaseModule
 
     if (!fs.existsSync(databaseModuleFilePath)) {
@@ -363,9 +416,13 @@ async function updateDatabaseModule(entityName: string, entityNameArquivoCase: s
     const moduleContent = fs.readFileSync(databaseModuleFilePath, 'utf-8')
 
     // Adicionar os imports
-    const repositoryInterfaceImport = `import { I${nameTitleCase}Repository } from '../../domain/repositories/${entityNameArquivoCase}-repository';`
-    const repositoryClassImport = `import { ${nameTitleCase}Repository } from './typeorm/repositories/${entityNameArquivoCase}-repository';`
-    const entityImport = `import { ${nameTitleCase}Entity } from './typeorm/entities/${entityNameArquivoCase}.entity';`
+    const repositoryInterfaceImport = `import { I${nameTitleCase}Repository } from '../../domain/repositories/${
+        isTenant ? 'tenanted/' : ''
+    }${entityNameArquivoCase}-repository';`
+    const repositoryClassImport = `import { ${nameTitleCase}Repository } from './typeorm/repositories/${
+        isTenant ? 'tenanted/' : ''
+    }${entityNameArquivoCase}-repository';`
+    const entityImport = `import { ${nameTitleCase}Entity } from './typeorm/entities/${isTenant ? 'tenanted/' : ''}${entityNameArquivoCase}.entity';`
 
     // Criar o provider para inversão de dependência
     const providerDeclaration = `{

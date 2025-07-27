@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { IBcryptService } from 'src/domain/adapters/bcrypt.interface';
 import { ILogger } from 'src/domain/adapters/logger.interface';
 import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
 import { I<%= entityNameTitleCase %>Repository } from 'src/domain/repositories/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>-repository';
@@ -15,7 +14,7 @@ interface Update<%= entityNameTitleCase %>Response {
 
 @Injectable()
 export class Update<%= entityNameTitleCase %> {
-    constructor(private readonly logger: ILogger, private readonly <%= entityNameCamelCase %>Repository: I<%= entityNameTitleCase %>Repository, private readonly bcryptService: IBcryptService) {}
+    constructor(private readonly logger: ILogger, private readonly <%= entityNameCamelCase %>Repository: I<%= entityNameTitleCase %>Repository) {}
 
     async execute(request: Update<%= entityNameTitleCase %>Request): Promise<Update<%= entityNameTitleCase %>Response> {
         const { <%= entityName %>_id, <%= entityName %> } = request;

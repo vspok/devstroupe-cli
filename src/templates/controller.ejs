@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { Body, Delete, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common/decorators';
+import { Body, Delete, Param, Post, Put, Query, UseGuards } from '@nestjs/common/decorators';
 import { ApiExtraModels, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { <%= entityNameTitleCase %>ViewModel } from '../view-models/<%= entityNameArquivoCase %>-view-model';
 import { Create<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/create-<%= entityNameArquivoCase %>';
@@ -10,7 +10,6 @@ import { Update<%= entityNameTitleCase %>Body } from '../dtos/update-<%= entityN
 import { FindMany<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/find-many-<%= entityNameArquivoCase %>';
 import { Find<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/find-<%= entityNameArquivoCase %>';
 import { Delete<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= entityNameArquivoCase %>/delete-<%= entityNameArquivoCase %>';
-import { IPaginator } from 'src/helpers/interfaces/paginator-response-interface';
 import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
 import { Filter<%= entityNameTitleCase %>} from 'src/domain/repositories/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>-repository';
 

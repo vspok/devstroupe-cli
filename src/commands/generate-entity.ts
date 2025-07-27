@@ -602,19 +602,46 @@ import { ${nameTitleCase}Entity } from './typeorm/entities/${is_tenant ? 'tenant
                             adicionalOptions = `${decimalFormat.replace(/{|}/g, '')}`
                         }
                     }
-                    if (prop?.required && prop.default) {
-                        propCode = `@Column({ nullable: false,  default: '${valueDefault}' ${
-                            adicionalOptions ? ', ' + adicionalOptions + '' : ''
-                        }})\n  ${propCode.replace(`@Column()`, '')}`
-                    } else if (prop?.required) {
-                        propCode = `@Column({ nullable: false ${adicionalOptions ? ', ' + adicionalOptions + '' : ''}})\n  ${propCode.replace(`@Column()`, '')}`
-                    } else if (prop.default) {
-                        propCode = `@Column({ default: '${valueDefault}' ${adicionalOptions ? ', ' + adicionalOptions + '' : ''} })\n  ${propCode.replace(
-                            `@Column()`,
-                            ''
-                        )}`
-                    } else if (prop?.adicionalOptions) {
-                        propCode = `@Column({ ${adicionalOptions} })\n  ${propCode.replace(`@Column()`, '')}`
+                    // Build column options object dynamically
+                    const columnOptions: Record<string, any> = {}
+
+                    if (prop?.required) {
+                        columnOptions.nullable = false
+                    } else {
+                        columnOptions.nullable = true
+                    }
+
+                    if (prop.default !== undefined) {
+                        columnOptions.default = valueDefault
+                    }
+                    if (adicionalOptions) {
+                        // Try to parse as object, fallback to string merge
+                        try {
+                            const parsed = eval('({' + adicionalOptions + '})')
+                            Object.assign(columnOptions, parsed)
+                        } catch {
+                            // If parsing fails, just append as string (legacy)
+                        }
+                    }
+
+                    // Handle decimal format
+                    if (prop?.decimal_format_db) {
+                        columnOptions.type = 'decimal'
+                        columnOptions.precision = Number(prop.decimal_format_db.split(',')[0] || 20)
+                        columnOptions.scale = Number(prop.decimal_format_db.split(',')[1] || 2)
+                    }
+
+                    // Build @Column decorator string
+                    const optionsString = Object.keys(columnOptions).length
+                        ? `{ ${Object.entries(columnOptions)
+                              .map(([k, v]) =>
+                                  typeof v === 'string' ? `${k}: '${v}'` : typeof v === 'function' ? `${k}: ${v.toString()}` : `${k}: ${JSON.stringify(v)}`
+                              )
+                              .join(', ')} }`
+                        : ''
+
+                    if (optionsString) {
+                        propCode = `@Column(${optionsString})\n  ${propCode.replace(`@Column()`, '')}`
                     }
 
                     return propCode

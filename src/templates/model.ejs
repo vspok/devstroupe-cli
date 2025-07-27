@@ -1,7 +1,7 @@
 export class <%= entityNameTitleCase %>Model {
     <%= entityNameLowerCase %>_id: number;
   <% properties.forEach(prop => { -%>
-    <%= prop.prop %>: <%= prop.type  %><%= prop.required ? '' : ' | null' %>;
+    <%= prop.prop %>: <%= prop.typeTransform ? prop.typeTransform : prop.type %><%= prop.required ? '' : ' | null' %>;
 <% }) -%>
     createdAt: Date;
     updatedAt: Date;
