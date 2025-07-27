@@ -1,0 +1,23 @@
+<% relationships.forEach(rel => { %>
+import { <%= toTitleCase(rel.entity) %>Model } from './<%= toArquivoCase(rel.entity) %>.model';
+<% }) %>
+
+export class <%= entityNameTitleCase %>Model {
+    <%= entityNameArquivoCase %>_id: number;
+    <% properties.forEach(prop => { %>
+    <%= prop.prop %>: <%= prop.typeTransform %>;
+    <% }) %>
+    <% relationships.forEach(rel => { %>
+    <%= rel.name %>: <%= toTitleCase(rel.entity) %>Model<%= rel.type === 'many-to-one' || rel.type === 'one-to-one' ? '' : '[]' %>;
+    <% }) %>
+
+    constructor(data?: Partial<<%= entityNameTitleCase %>Model>) {
+        this.<%= entityNameArquivoCase %>_id = data?.<%= entityNameArquivoCase %>_id ?? null;
+        <% properties.forEach(prop => { %>
+        this.<%= prop.prop %> = data?.<%= prop.prop %> ?? null;
+        <% }) %>
+        <% relationships.forEach(rel => { %>
+        this.<%= rel.name %> = data?.<%= rel.name %> ?? <%= rel.type === 'many-to-one' || rel.type === 'one-to-one' ? 'null' : '[]' %>;
+        <% }) %>
+    }
+}

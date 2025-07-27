@@ -1,0 +1,64 @@
+import { Component, OnInit } from '@angular/core';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+
+import { <%= entityNameTitleCase %>Service } from 'app/services/<%= entityNameArquivoCase %>.service';
+import { <%= entityNameTitleCase %>Model } from 'app/models/<%= entityNameArquivoCase %>.model';
+import { <%= entityNameTitleCase %>FormComponent } from '../form/<%= entityNameArquivoCase %>-form.component';
+
+@Component({
+    selector: 'app-<%= entityNameArquivoCase %>-list',
+    standalone: true,
+    imports: [
+      CommonModule, MatTableModule, MatPaginatorModule, MatSortModule, MatButtonModule, MatIconModule, MatDialogModule
+    ],
+    templateUrl: './<%= entityNameArquivoCase %>-list.component.html',
+})
+export class <%= entityNameTitleCase %>ListComponent implements OnInit {
+    dataSource = new MatTableDataSource<<%= entityNameTitleCase %>Model>();
+    tableColumns: string[] = [<% properties.forEach(prop => { %>'<%= prop.prop %>', <% }) %>];
+    totalItems = 0;
+    filter = { limit: 10, page: 1 };
+
+    constructor(private service: <%= entityNameTitleCase %>Service, private dialog: MatDialog) {}
+
+    ngOnInit(): void {
+        this.loadItems();
+    }
+
+    loadItems(): void {
+        this.service.list(this.filter).subscribe((response) => {
+            this.dataSource.data = response.items;
+            this.totalItems = response.meta.totalItems;
+        });
+    }
+
+    sortData(event: any): void {
+        // Implement sorting logic here if needed
+    }
+
+    pageEvent(event: any): void {
+        this.filter.page = event.pageIndex + 1;
+        this.filter.limit = event.pageSize;
+        this.loadItems();
+    }
+
+    create<%= entityNameTitleCase %>(data?: <%= entityNameTitleCase %>Model): void {
+        const dialogRef = this.dialog.open(<%= entityNameTitleCase %>FormComponent, {
+            data: data || {},
+            width: '600px',
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.loadItems();
+            }
+        });
+    }
+}

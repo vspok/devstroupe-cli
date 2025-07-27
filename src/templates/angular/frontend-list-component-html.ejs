@@ -1,0 +1,59 @@
+<div class="sm:absolute sm:inset-0 flex flex-col flex-auto min-w-0 bg-transparent">
+    <div class="flex flex-auto overflow-auto sm:overflow-hidden">
+        <div class="absolute inset-0 flex flex-col min-w-0 sm:overflow-hidden">
+            <div class="flex-auto h-full w-full sm:p-4 sm:pt-0">
+                <div class="flex flex-col flex-auto h-full gap-4">
+                    <div class="flex flex-col">
+                        <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-4 sm:px-0">
+                            <div class="text-4xl font-extrabold tracking-tight">Lista de <%= entityNameTitleCase %></div>
+                            <div class="flex flex-wrap gap-3 shrink-0 items-center">
+                                <button mat-stroked-button [color]="'primary'" class="h-10 px-6">Filtrar</button>
+                                <button mat-flat-button class="h-10 px-6" [color]="'primary'" (click)="create<%= entityNameTitleCase %>()">Criar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col bg-card sm:shadow-lg sm:rounded-xl h-full overflow-hidden">
+                        <div class="flex flex-col flex-auto h-full">
+                            <div class="flex flex-auto overflow-hidden">
+                                <div class="flex flex-col flex-auto overflow-x-hidden sm:overflow-y-auto">
+                                    <div class="overflow-x-auto h-full">
+                                        <table class="w-full bg-card striped" mat-table matSort [dataSource]="dataSource" (matSortChange)="sortData($event)">
+                                            <% properties.forEach(prop => { %>
+                                            <ng-container matColumnDef="<%= prop.prop %>">
+                                                <th mat-header-cell mat-sort-header="<%= entityName %>.<%= prop.prop %>" *matHeaderCellDef>
+                                                    <%= prop.label || prop.prop %>
+                                                </th>
+                                                <td mat-cell *matCellDef="let <%= entityName %>">
+                                                    <span class="pr-6 font-medium whitespace-nowrap">
+                                                        {{ <%= entityName %>.<%= prop.prop %> }}
+                                                    </span>
+                                                </td>
+                                            </ng-container>
+                                            <% }) %>
+                                            <tr mat-header-row *matHeaderRowDef="tableColumns; sticky: true"></tr>
+                                            <tr
+                                                class="order-row h-14 cursor-pointer"
+                                                mat-row
+                                                *matRowDef="let row; columns: tableColumns"
+                                                (click)="create<%= entityNameTitleCase %>(row)"
+                                            ></tr>
+                                        </table>
+                                    </div>
+                                    <mat-paginator
+                                        class="mat-mdc-paginator sm:inset-x-0 sm:bottom-0 border-b sm:border-t sm:border-b-0 z-10 bg-gray-50 dark:bg-transparent"
+                                        [pageSizeOptions]="[5, 10, 25, 100]"
+                                        [pageSize]="filter.limit"
+                                        [length]="totalItems"
+                                        [pageIndex]="filter.page - 1"
+                                        (page)="pageEvent($event)"
+                                        [showFirstLastButtons]="true"
+                                    ></mat-paginator>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

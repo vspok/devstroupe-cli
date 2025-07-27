@@ -1,0 +1,14 @@
+import { MatDialog } from '@angular/material/dialog';
+import { Injectable } from '@angular/core';
+import { ApiService } from 'app/shared/apis/api.service';
+import { BaseService } from 'app/core/services/base.service';
+import { <%= entityNameTitleCase %>Model } from 'app/models/<%= entityNameArquivoCase %>.model';
+
+@Injectable({
+    providedIn: 'root',
+})
+export class <%= entityNameTitleCase %>Service extends BaseService<<%= entityNameTitleCase %>Model> {
+    constructor(api: ApiService, _matDialog: MatDialog) {
+        super(api, _matDialog, '<%= entityName %>');
+    }
+}

@@ -1,0 +1,18 @@
+import { Routes } from '@angular/router';
+import { <%= entityNameTitleCase %>ListComponent } from './list/<%= entityNameArquivoCase %>-list.component';
+import { <%= entityNameTitleCase %>FormComponent } from './form/<%= entityNameArquivoCase %>-form.component';
+
+export default [
+    {
+        path: '',
+        component: <%= entityNameTitleCase %>ListComponent,
+    },
+    {
+        path: 'create',
+        component: <%= entityNameTitleCase %>FormComponent,
+    },
+    {
+        path: 'edit/:id',
+        component: <%= entityNameTitleCase %>FormComponent,
+    },
+] as Routes;

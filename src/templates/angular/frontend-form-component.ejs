@@ -1,0 +1,144 @@
+import { Component, Inject, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDialogRef, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { ActivatedRoute, RouterModule } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { CommonModule } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+
+import { <%= entityNameTitleCase %>Service } from 'app/services/<%= entityNameArquivoCase %>.service';
+import { <%= entityNameTitleCase %>Model } from 'app/models/<%= entityNameArquivoCase %>.model';
+<% relationships.forEach(rel => { %>
+import { <%= toTitleCase(rel.entity) %>Model } from 'app/models/<%= toArquivoCase(rel.entity) %>.model';
+import { <%= toTitleCase(rel.entity) %>Service } from 'app/services/<%= toArquivoCase(rel.entity) %>.service';
+<% }) %>
+import { finalize, take } from 'rxjs';
+
+@Component({
+    selector: 'app-<%= entityNameArquivoCase %>-form',
+    standalone: true,
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatDialogModule,
+        MatButtonModule,
+        MatInputModule,
+        RouterModule,
+        MatIconModule,
+        MatSelectModule,
+        MatDatepickerModule,
+        MatProgressSpinnerModule,
+        NgxMaskDirective,
+        MatCheckboxModule,
+    ],
+    templateUrl: './<%= entityNameArquivoCase %>-form.component.html',
+})
+export class <%= entityNameTitleCase %>FormComponent implements OnInit {
+    form: FormGroup = this.fb.group({
+        <%= entityName %>_id: [null],
+        <% properties.forEach(prop => { %><%= prop.prop %>: [null<%= prop.required ? ', Validators.required' : '' %>],<% }) %>
+        <% relationships.forEach(rel => { %><%= rel.name %>: [null],<% }) %>
+    });
+
+    loading: boolean = false;
+    loadingData: boolean = false;
+
+    <% relationships.forEach(rel => { %>
+    <%= rel.name %>Options: <%= toTitleCase(rel.entity) %>Model[] = [];
+    <% }) %>
+
+    constructor(
+        @Inject(MAT_DIALOG_DATA) public data: <%= entityNameTitleCase %>Model | null,
+        private fb: FormBuilder,
+        private service: <%= entityNameTitleCase %>Service,
+        private route: ActivatedRoute,
+        private dialogRef: MatDialogRef<<%= entityNameTitleCase %>FormComponent>,
+        <% relationships.forEach(rel => { %>private <%= rel.name %>Service: <%= toTitleCase(rel.entity) %>Service,<% }) %>
+    ) {
+        this.dialogRef.addPanelClass('card-dialog');
+    }
+
+    ngOnInit(): void {
+        this.get<%= entityNameTitleCase %>();
+        <% relationships.forEach(rel => { %>this.get<%= toTitleCase(rel.entity) %>Options();<% }) %>
+    }
+
+    done(): void {
+        this.loading = true;
+        this.form.markAllAsTouched();
+        if (!this.form.valid) {
+            this.loading = false;
+            return;
+        }
+
+        const data: <%= entityNameTitleCase %>Model = this.form.value;
+        if (this.data?.<%= entityName %>_id) {
+            this.service
+                .update(data)
+                .pipe(
+                    take(1),
+                    finalize(() => (this.loading = false)),
+                )
+                .subscribe(() => this.dialogRef.close(true));
+        } else {
+            this.service
+                .create(data)
+                .pipe(
+                    take(1),
+                    finalize(() => (this.loading = false)),
+                )
+                .subscribe(() => this.dialogRef.close(true));
+        }
+    }
+
+    clear(): void {
+        this.dialogRef.close(false);
+    }
+
+    delete<%= entityNameTitleCase %>(): void {
+        if (this.data) {
+            this.service
+                .delete(this.data)
+                .pipe(
+                    take(1),
+                    finalize(() => (this.loading = false)),
+                )
+                .subscribe(() => this.dialogRef.close(true));
+        }
+    }
+
+    <% relationships.forEach(rel => { %>
+    get<%= toTitleCase(rel.entity) %>Options(): void {
+        this.<%= rel.name %>Service
+            .list({ limit: 'all' })
+            .pipe(take(1))
+            .subscribe((data) => {
+                this.<%= rel.name %>Options = data.items;
+            });
+    }
+    <% }) %>
+
+    get<%= entityNameTitleCase %>(): void {
+        const id = this.data?.<%= entityName %>_id;
+        if (!id) {
+            return;
+        }
+        this.loadingData = true;
+        this.service
+            .getById(+id)
+            .pipe(
+                take(1),
+                finalize(() => (this.loadingData = false)),
+            )
+            .subscribe((data) => {
+                this.data = data;
+                this.form.patchValue(data);
+            });
+    }
+}

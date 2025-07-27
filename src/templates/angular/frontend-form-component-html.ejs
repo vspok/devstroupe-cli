@@ -1,0 +1,94 @@
+<div class="relative flex flex-col w-full h-full">
+    <!-- Header -->
+    <div class="flex flex-row justify-between flex-auto items-center sm:items-center">
+        <div class="text-2xl leading-6 font-bold p-4 flex items-center break-all">
+            {{ this.data?.<%= entityName %>_id ? this.data?.<%= entityName %>_id + ' - Editar' : 'Cadastrar' }} <%= entityNameTitleCase %>
+        </div>
+        <div class="p-4">
+            <button (click)="clear()" mat-icon-button>
+                <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="flex flex-col sm:flex-row flex-auto items-center sm:items-center h-full overflow-auto px-4">
+        <ng-container>
+            <div
+                class="flex flex-col items-center sm:items-start mt-4 sm:mt-0 w-full space-y-1 text-center sm:text-left"
+                *ngIf="!loadingData; else loadingTemplate"
+            >
+                <div class="w-full">
+                    <form class="grid sm:grid-cols-6 gap-y-0 gap-x-6 w-full" [formGroup]="form">
+                        <% properties.forEach(prop => { %>
+                        <% if (prop.typeTransform === 'boolean') { %>
+                        <div class="sm:col-span-3">
+                            <mat-checkbox [color]="'primary'" [formControlName]="'<%= prop.prop %>'">
+                                <%= prop.label || prop.prop.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()) %>
+                            </mat-checkbox>
+                        </div>
+                        <% } else if (prop.typeTransform === 'Date') { %>
+                        <div class="sm:col-span-3">
+                            <mat-form-field class="w-full">
+                                <mat-label><%= prop.label || prop.prop.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()) %></mat-label>
+                                <input readonly [formControlName]="'<%= prop.prop %>'" [matDatepicker]="'picker_<%= prop.prop %>'" (click)="'picker_<%= prop.prop %>'.open()" matInput />
+                                <mat-datepicker-toggle matSuffix [for]="'picker_<%= prop.prop %>'"> </mat-datepicker-toggle>
+                                <mat-datepicker #picker_<%= prop.prop %>></mat-datepicker>
+                                <mat-error> Campo Obrigatório </mat-error>
+                            </mat-form-field>
+                        </div>
+                        <% } else { %>
+                        <div class="sm:col-span-6">
+                            <mat-form-field class="w-full">
+                                <mat-label><%= prop.label || prop.prop.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()) %></mat-label>
+                                <input type="text" [formControlName]="'<%= prop.prop %>'" class="" matInput />
+                                <mat-error> Campo Obrigatório </mat-error>
+                            </mat-form-field>
+                        </div>
+                        <% } %>
+                        <% }) %>
+
+                        <% relationships.forEach(rel => { %>
+                        <div class="sm:col-span-6">
+                            <mat-form-field class="w-full">
+                                <mat-label><%= rel.name.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()) %></mat-label>
+                                <mat-select [formControlName]="'<%= rel.name %>_id'">
+                                    <mat-option *ngFor="let option of <%= rel.name %>Options" [value]="option.<%= rel.entity %>_id">
+                                        {{ option?.name || option?.title || option?.description }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error> Campo Obrigatório </mat-error>
+                            </mat-form-field>
+                        </div>
+                        <% }) %>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Loading Template -->
+            <ng-template #loadingTemplate>
+                <div class="w-full h-full flex items-center justify-center">
+                    <mat-spinner></mat-spinner>
+                </div>
+            </ng-template>
+        </ng-container>
+    </div>
+
+    <!-- Footer -->
+    <ng-container *ngIf="!loadingData">
+        <div class="flex items-center justify-center sm:justify-between px-6 py-4 bg-gray-100 dark:bg-black dark:bg-opacity-10 gap-2 flex-wrap">
+            <div>
+                <button (click)="delete<%= entityNameTitleCase %>()" *ngIf="data?.<%= entityName %>_id" mat-stroked-button [color]="'warn'">Remover</button>
+            </div>
+            <div></div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- Cancel -->
+                <button (click)="clear()" mat-stroked-button [color]="'primary'" [matDialogClose]="'cancelled'">Fechar</button>
+                <!-- Confirm -->
+                <button (click)="done()" [disabled]="loading" [color]="'primary'" mat-flat-button>
+                    {{ data?.<%= entityName %>_id ? 'Atualizar' : 'Salvar' }}
+                </button>
+            </div>
+        </div>
+    </ng-container>
+</div>
