@@ -18,6 +18,10 @@ export default {
             const databaseModuleFilePath = path.join(cwd, 'src', 'infra', 'database', 'database.module.ts')
             const entities = await generateProperties()
             for (const entity of entities) {
+                if (!entity?.name) {
+                    print.error('Por favor, forneça um nome para a entidade.')
+                    continue
+                }
                 const entityName = toSnakeCase(entity.name)
                 const nameTitleCase = toTitleCase(entity.name)
                 const entityNameCamelCase = toCamelCase(entity.name)
