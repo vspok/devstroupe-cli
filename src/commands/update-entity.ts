@@ -107,8 +107,15 @@ async function updateEntityFile(filePath: string, newFields: any[]) {
     // Gerar código para os novos campos
     const newFieldsCode = generatePropsCode(newFields)
 
-    // Inserir os novos campos antes do último `}`
-    content = content.replace(/(\s*}\s*$)/, `${newFieldsCode}\n$1`)
+    // Tenta inserir antes do @CreateDateColumn
+    const createDateColumnRegex = /(\s*@CreateDateColumn[^\n]*\n)/
+
+    if (createDateColumnRegex.test(content)) {
+        content = content.replace(createDateColumnRegex, `${newFieldsCode}\n$1`)
+    } else {
+        // Se não encontrar, insere antes do último }
+        content = content.replace(/(\s*}\s*$)/, `${newFieldsCode}\n$1`)
+    }
 
     // Salvar o arquivo atualizado
     fs.writeFileSync(filePath, content)
@@ -146,16 +153,19 @@ async function updateDtoFile(filePath: string, newFields: any[], dtoType: string
 
     let content = fs.readFileSync(filePath, 'utf-8')
 
-    // Gerar código para os novos campos no DTO
+    // Gerar código para os novos campos no DTO, incluindo decorators
     const newFieldsCode = newFields
         .map((field) => {
-            const isOptional = !field.required && dtoType === 'Update' ? '?' : ''
-            return `${field.name}${isOptional}: ${field.type};`
+            const isOptional = !field.required && dtoType === 'Update'
+            const decorators = [`@ApiProperty({ required: ${field.required ? 'true' : 'false'} })`, isOptional ? '@IsOptional()' : '']
+                .filter(Boolean)
+                .join('\n  ')
+            return `${decorators}\n  ${field.name}${isOptional ? '?' : ''}: ${field.type};`
         })
-        .join('\n')
+        .join('\n\n')
 
     // Inserir os novos campos antes do último `}`
-    content = content.replace(/(\s*}\s*$)/, `${newFieldsCode}\n$1`)
+    content = content.replace(/(\s*}\s*$)/, `\n${newFieldsCode}\n$1`)
 
     // Salvar o arquivo atualizado
     fs.writeFileSync(filePath, content)
