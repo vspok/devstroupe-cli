@@ -57,6 +57,8 @@ export default {
                     entityNameArquivoCase,
                     properties: entity.props,
                     relationships: entity.relationships || [],
+                    label: entity.label,
+                    description: entity.description,
                 }
 
                 // Gerar modelo
@@ -143,6 +145,8 @@ async function generateProperties() {
 
     return props as {
         name: string
+        label?: string
+        description?: string
         props: {
             prop: string
             type: string
@@ -156,6 +160,7 @@ async function generateProperties() {
             name: string
             type: string
             entity: string
+            displayProperty?: string
         }[]
     }[]
 }

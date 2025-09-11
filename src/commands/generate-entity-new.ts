@@ -72,6 +72,8 @@ export default {
                         )
                     ).join('\n'),
                     is_tenant: isTenant,
+                    label: entity.label,
+                    description: entity.description,
                 }
                 const generatedCode = `
                 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne,OneToOne, OneToMany, JoinTable, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
@@ -172,6 +174,8 @@ async function generateProperties() {
     type DecimalFormatString = `${number},${number}`
     const props = JSON.parse(await fs.promises.readFile(path.join(process.cwd(), 'newEntityProp.json'), 'utf-8')) as {
         name: string
+        label?: string
+        description?: string
         props: {
             prop: string
             type: string
@@ -184,6 +188,7 @@ async function generateProperties() {
             name: string
             type: string
             entity: string
+            displayProperty?: string
         }[]
     }[]
     return props

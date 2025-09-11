@@ -1,0 +1,791 @@
+[
+    {
+        "name": "StatusProductionOrder",
+        "label": "Status da Ordem de Produção",
+        "description": "Status da Ordem de Produção utilizados no ciclo de vida da Ordem de Produção.",
+        "props": [
+            {
+                "prop": "item",
+                "type": "string",
+                "required": true,
+                "label": "Título do Status da Ordem de Produção"
+            },
+            {
+                "prop": "order",
+                "type": "int",
+                "required": true,
+                "label": "Ordem do Status"
+            },
+            {
+                "prop": "is_closed",
+                "type": "int",
+                "required": true,
+                "label": "Se o Status é Fechado",
+                "adicionalOptions": "Se for fechado, ocultar por padrão em filtros esse item."
+            },
+            {
+                "prop": "is_first_status",
+                "type": "int",
+                "required": true,
+                "label": "É o Primeiro Status no Ciclo da Ordem de Produção?",
+                "adicionalOptions": "Só permitir 1 status como true."
+            }
+        ]
+    },
+    {
+        "name": "TypeProduct",
+        "label": "Tipo de Produto",
+        "description": "Tipos de Produto a serem utilizados para associação no momento da criação do produto e categorizações em análises.",
+        "props": [
+            {
+                "prop": "title",
+                "type": "string",
+                "required": true,
+                "label": "Título do Tipo de Produto"
+            }
+        ]
+    },
+    {
+        "name": "Product",
+        "label": "Produto",
+        "description": "Produtos que o cliente pode associar em seus orçamentos e vendas.",
+        "props": [
+            {
+                "prop": "item",
+                "type": "string",
+                "required": true,
+                "label": "Título do Produto"
+            },
+            {
+                "prop": "source",
+                "type": "string",
+                "required": true,
+                "label": "Origem do Produto"
+            },
+            {
+                "prop": "description",
+                "type": "string",
+                "required": true,
+                "label": "Descrição do Produto"
+            },
+            {
+                "prop": "sku_code",
+                "type": "string",
+                "required": false,
+                "label": "SKU do Produto"
+            },
+            {
+                "prop": "cest_code",
+                "type": "string",
+                "required": false,
+                "label": "Código CEST do Produto"
+            },
+            {
+                "prop": "ncm_code",
+                "type": "string",
+                "required": false,
+                "label": "Código NCM do Produto"
+            },
+            {
+                "prop": "unity",
+                "type": "string",
+                "required": true,
+                "label": "Unidade de Medida",
+                "adicionalOptions": "Ver se possui lista."
+            },
+            {
+                "prop": "last_price_per_unity",
+                "type": "decimal",
+                "required": false,
+                "decimal_format_db": "18,4",
+                "label": "Preço Unitário Atual do Produto"
+            },
+            {
+                "prop": "is_active",
+                "type": "int",
+                "required": true,
+                "label": "Se o produto está ativo ou inativo",
+                "adicionalOptions": "Se estiver inativo, não mostrar no dropdown para criar vendas."
+            }
+        ],
+        "relationships": [
+            {
+                "name": "type_product",
+                "type": "many-to-one",
+                "entity": "TypeProduct",
+                "displayProperty": "title"
+            },
+            {
+                "name": "company",
+                "type": "many-to-one",
+                "entity": "Company",
+                "displayProperty": "title"
+            }
+        ]
+    },
+    {
+        "name": "Function",
+        "label": "Função",
+        "description": "Funções e regras básicas de acesso dos perfils de usuário no sistema.",
+        "props": [
+            {
+                "prop": "item",
+                "type": "string",
+                "required": true,
+                "label": "Título da Função"
+            },
+            {
+                "prop": "can_login",
+                "type": "int",
+                "required": true,
+                "label": "Se o usuário pode logar no sistema"
+            },
+            {
+                "prop": "is_customer",
+                "type": "int",
+                "required": true,
+                "label": "Se a função é de clientes"
+            },
+            {
+                "prop": "can_create_negociation",
+                "type": "int",
+                "required": true,
+                "label": "Se o usuário pode criar negociações"
+            },
+            {
+                "prop": "can_cancel_budget_or_sale",
+                "type": "int",
+                "required": true,
+                "label": "Se o usuário pode cancelar um orçamento ou venda"
+            },
+            {
+                "prop": "can_move_customer_to_wallet",
+                "type": "int",
+                "required": true,
+                "label": "Se o usuário pode mover clientes para sua carteira"
+            },
+            {
+                "prop": "can_view_sale",
+                "type": "int",
+                "required": true,
+                "label": "Se o usuário pode visualizar a tela de vendas"
+            },
+            {
+                "prop": "can_create_sale",
+                "type": "int",
+                "required": true,
+                "label": "Se a função pode criar vendas"
+            },
+            {
+                "prop": "can_create_finance",
+                "type": "int",
+                "required": true,
+                "label": "Se a função pode criar registros financeiros"
+            }
+        ]
+    },
+    {
+        "name": "User",
+        "label": "Usuário",
+        "description": "Usuários do sistema, podendo ser Admins, Vendedores ou Outros.",
+        "props": [
+            {
+                "prop": "name",
+                "type": "string",
+                "required": true,
+                "label": "Nome do Usuário"
+            },
+            {
+                "prop": "phone",
+                "type": "string",
+                "required": true,
+                "label": "Telefone do Usuário"
+            },
+            {
+                "prop": "email",
+                "type": "string",
+                "required": true,
+                "label": "Email do Usuário"
+            },
+            {
+                "prop": "password",
+                "type": "string",
+                "required": false,
+                "label": "Senha do Usuário",
+                "adicionalOptions": "Obrigatório se na function o cara precisar logar"
+            },
+            {
+                "prop": "street",
+                "type": "string",
+                "required": true,
+                "label": "Rua",
+                "adicionalOptions": "Só obrigatório se for Cliente."
+            },
+            {
+                "prop": "number",
+                "type": "string",
+                "required": true,
+                "label": "Numero",
+                "adicionalOptions": "Só obrigatório se for Cliente."
+            },
+            {
+                "prop": "neighboorhod",
+                "type": "string",
+                "required": true,
+                "label": "Bairro",
+                "adicionalOptions": "Só obrigatório se for Cliente."
+            },
+            {
+                "prop": "city",
+                "type": "string",
+                "required": true,
+                "label": "Cidade",
+                "adicionalOptions": "Só obrigatório se for Cliente."
+            },
+            {
+                "prop": "observation",
+                "type": "string",
+                "required": false,
+                "label": "Observações",
+                "adicionalOptions": "Só obrigatório se for Cliente."
+            },
+            {
+                "prop": "cep",
+                "type": "string",
+                "required": true,
+                "label": "CEP",
+                "adicionalOptions": "Só obrigatório se for Cliente."
+            },
+            {
+                "prop": "type_doc",
+                "type": "string",
+                "required": true,
+                "label": "Tipo de Documento",
+                "adicionalOptions": "CNPJ, RG ou CPF"
+            },
+            {
+                "prop": "doc_number",
+                "type": "string",
+                "required": true,
+                "label": "Numero do Documento",
+                "adicionalOptions": "Mascara de Texto"
+            },
+            {
+                "prop": "days_at_last_sale",
+                "type": "int",
+                "required": true,
+                "label": "Dias desde a ultima compra",
+                "adicionalOptions": "Função calculada automaticamente para controlar se o cliente está ou não disponivel para vendedores."
+            },
+            {
+                "prop": "sale_comission",
+                "type": "float",
+                "required": true,
+                "label": "Valor da Comissão de Vendas",
+                "adicionalOptions": "Plotar apenas se o usuário for da função Vendedor."
+            },
+            {
+                "prop": "user_wallet_seller",
+                "type": "int",
+                "required": false,
+                "label": "Id do Vendedor associado ao cliente na carteira",
+                "adicionalOptions": "Só preencher quando o vendedor mover tal cliente para sua carteira."
+            },
+            {
+                "prop": "user_wallet_seller_deadline",
+                "type": "date",
+                "required": false,
+                "label": "Data de prazo para o cliente ser removido da carteira do vendedor",
+                "adicionalOptions": "Só preencher quando o vendedor mover tal cliente para sua carteira. (usando NOW() + 3dias)"
+            },
+            {
+                "prop": "is_network",
+                "type": "int",
+                "required": true,
+                "label": "Se a empresa é uma rede de empresas"
+            },
+            {
+                "prop": "type_user",
+                "type": "int",
+                "required": true,
+                "label": "Tipo do Usuário",
+                "adicionalOptions": "Admin, Vendedor, Financeiro, Produção, Cliente."
+            }
+        ],
+        "relationships": [
+            {
+                "name": "function",
+                "type": "many-to-one",
+                "entity": "Function",
+                "displayProperty": "item"
+            },
+            {
+                "name": "company",
+                "type": "many-to-one",
+                "entity": "Company",
+                "displayProperty": "title"
+            }
+        ]
+    },
+    {
+        "name": "Company",
+        "label": "Empresa",
+        "description": "Empresas para controle de empresas que o ArtCupCollor atua e quer associar as seus usuários e clientes.",
+        "props": [
+            {
+                "prop": "title",
+                "type": "string",
+                "required": true,
+                "label": "Título da Empresa"
+            },
+            {
+                "prop": "type_doc",
+                "type": "string",
+                "required": true,
+                "label": "Tipo de Documento da Empresa",
+                "adicionalOptions": "CNPJ, RG ou CPF"
+            },
+            {
+                "prop": "image_url",
+                "type": "string",
+                "required": true,
+                "label": "Logotipo"
+            },
+            {
+                "prop": "info_registration",
+                "type": "string",
+                "required": true,
+                "label": "Informações da Inscrição Estaduai, CNAEs, etc..",
+                "adicionalOptions": "A ideia é obter um json da API e guardar para uso na emissão de NF."
+            },
+            {
+                "prop": "street",
+                "type": "string",
+                "required": true,
+                "label": "Rua"
+            },
+            {
+                "prop": "number",
+                "type": "string",
+                "required": true,
+                "label": "Numero"
+            },
+            {
+                "prop": "neighboorhod",
+                "type": "string",
+                "required": true,
+                "label": "Bairro"
+            },
+            {
+                "prop": "responsible_email",
+                "type": "string",
+                "required": false,
+                "label": "Email do Responsável"
+            },
+            {
+                "prop": "phone",
+                "type": "string",
+                "required": false,
+                "label": "Telefone da Empresa"
+            },
+            {
+                "prop": "city",
+                "type": "string",
+                "required": true,
+                "label": "Cidade"
+            },
+            {
+                "prop": "observation",
+                "type": "string",
+                "required": false,
+                "label": "Observações"
+            },
+            {
+                "prop": "cep",
+                "type": "string",
+                "required": true,
+                "label": "CEP"
+            },
+            {
+                "prop": "is_active",
+                "type": "int",
+                "required": true,
+                "label": "Se a empresa está ativa"
+            },
+            {
+                "prop": "doc_number",
+                "type": "string",
+                "required": true,
+                "label": "Numero de Documento da Empresa",
+                "adicionalOptions": "Mascara de Texto"
+            }
+        ]
+    },
+    {
+        "name": "Negotiation",
+        "label": "Negociação",
+        "description": "Negociações entre vendedores e clientes.",
+        "props": [
+            {
+                "prop": "end_at",
+                "type": "date",
+                "required": false,
+                "label": "Data de Fim da Negociação",
+                "adicionalOptions": "Finalizar em 3 dias a data para casos em que o vendedor nunca vendeu pra esse cliente, e 90 dias se for um cliente que já teve venda com esse vendedor."
+            },
+            {
+                "prop": "description",
+                "type": "string",
+                "required": false,
+                "label": "Descrição da Negociação"
+            },
+            {
+                "prop": "deadline_at",
+                "type": "date",
+                "required": true,
+                "label": "Prazo da Negociação",
+                "adicionalOptions": "Se o prazo chegar, o usuário deve cancelar no is_canceled e voltar o cliente como disponivel. (o prazo é calculado automatico com base na regra da linha 83, mas o admin pode colocar o prazo que quiser."
+            },
+            {
+                "prop": "is_canceled",
+                "type": "int",
+                "required": true,
+                "label": "Se a Negociação foi Cancelada"
+            }
+        ],
+        "relationships": [
+            {
+                "name": "user_customer",
+                "type": "many-to-one",
+                "entity": "User",
+                "displayProperty": "name"
+            },
+            {
+                "name": "user_seller",
+                "type": "many-to-one",
+                "entity": "User",
+                "displayProperty": "name"
+            }
+        ]
+    },
+    {
+        "name": "Sale",
+        "label": "Venda",
+        "description": "Orçamento e Vendas dos vendedores para seus clientes.",
+        "props": [
+            {
+                "prop": "start_at",
+                "type": "date",
+                "required": false,
+                "label": "Data de Inicio da Venda",
+                "adicionalOptions": "Obrigatório só se for venda."
+            },
+            {
+                "prop": "street_delivery",
+                "type": "string",
+                "required": true,
+                "label": "Rua da Venda"
+            },
+            {
+                "prop": "number_delivery",
+                "type": "string",
+                "required": true,
+                "label": "Numero da Venda"
+            },
+            {
+                "prop": "neighboorhod_delivery",
+                "type": "string",
+                "required": true,
+                "label": "Bairro da Venda"
+            },
+            {
+                "prop": "city_delivery",
+                "type": "string",
+                "required": true,
+                "label": "Cidade da Entrega"
+            },
+            {
+                "prop": "observation_delivery",
+                "type": "string",
+                "required": false,
+                "label": "Observações da Entrega"
+            },
+            {
+                "prop": "cep_delivery",
+                "type": "string",
+                "required": true,
+                "label": "CEP da Entrega"
+            },
+            {
+                "prop": "has_sold",
+                "type": "int",
+                "required": true,
+                "label": "Se a Venda foi efetivada"
+            },
+            {
+                "prop": "description",
+                "type": "string",
+                "required": false,
+                "label": "Descrição da Venda"
+            },
+            {
+                "prop": "total_value",
+                "type": "decimal",
+                "required": true,
+                "decimal_format_db": "18,4",
+                "label": "Valor Total Aplicado a Venda"
+            },
+            {
+                "prop": "commission_value",
+                "type": "decimal",
+                "required": true,
+                "decimal_format_db": "18,4",
+                "label": "Taxa de Comissão da Venda"
+            },
+            {
+                "prop": "discounts",
+                "type": "decimal",
+                "required": false,
+                "decimal_format_db": "18,4",
+                "label": "Descontos aplicados a venda",
+                "adicionalOptions": "criar feature para poder aplicar o desconto em % ou R$, mas salvar sempre em R$ no banco de dados."
+            },
+            {
+                "prop": "responsible_customer_name",
+                "type": "string",
+                "required": false,
+                "label": "Nome do Contato Responsável"
+            },
+            {
+                "prop": "responsible_customer_phone",
+                "type": "string",
+                "required": false,
+                "label": "Telefone do Contato Responsável"
+            },
+            {
+                "prop": "external_sale",
+                "type": "int",
+                "required": true,
+                "label": "Se a venda é pra fora da cidade",
+                "adicionalOptions": "Tem um KPI em ordem de produção que usa essa regra (olhar figma)"
+            },
+            {
+                "prop": "deadline_at",
+                "type": "date",
+                "required": false,
+                "label": "Prazo de Entrega da Venda"
+            }
+        ],
+        "relationships": [
+            {
+                "name": "user_seller",
+                "type": "many-to-one",
+                "entity": "User",
+                "displayProperty": "name"
+            },
+            {
+                "name": "negociation",
+                "type": "many-to-one",
+                "entity": "Negotiation",
+                "displayProperty": "description"
+            }
+        ]
+    },
+    {
+        "name": "ProductSale",
+        "label": "Produto da Venda",
+        "description": "Produtos que o cliente cadastrou nas suas vendas.",
+        "props": [
+            {
+                "prop": "price_per_unity",
+                "type": "decimal",
+                "required": true,
+                "decimal_format_db": "18,4",
+                "label": "Preço Unitário do Produto na Venda"
+            },
+            {
+                "prop": "quantity",
+                "type": "int",
+                "required": true,
+                "label": "Quantidade Vendida"
+            },
+            {
+                "prop": "color",
+                "type": "string",
+                "required": true,
+                "label": "Cor do Produto",
+                "adicionalOptions": "Carregar listagem com principais cores."
+            },
+            {
+                "prop": "size",
+                "type": "string",
+                "required": false,
+                "label": "Tamanho do Produto"
+            },
+            {
+                "prop": "description",
+                "type": "string",
+                "required": false,
+                "label": "Descrição do Produto Vendido"
+            },
+            {
+                "prop": "discounts",
+                "type": "decimal",
+                "required": true,
+                "label": "Desconto aplicado na venda para o produto",
+                "adicionalOptions": "Criar feature para poder digitar em % ou em R$ mas no banco de dados gravar em R$."
+            }
+        ],
+        "relationships": [
+            {
+                "name": "product",
+                "type": "many-to-one",
+                "entity": "Product",
+                "displayProperty": "item"
+            },
+            {
+                "name": "sale",
+                "type": "many-to-one",
+                "entity": "Sale",
+                "displayProperty": "description"
+            }
+        ]
+    },
+    {
+        "name": "FileSale",
+        "label": "Arquivo da Venda",
+        "description": "Anexo de arquivos associado as vendas.",
+        "props": [
+            {
+                "prop": "path",
+                "type": "string",
+                "required": true,
+                "label": "Local do arquivo no servidor"
+            },
+            {
+                "prop": "type_file",
+                "type": "string",
+                "required": true,
+                "label": "Tipo de Arquivo",
+                "adicionalOptions": "Pode ser \"Faturamento, NFe, Arte Final, Boleto\". (gravar um group associado a esses itens no json, depois eu preencho)."
+            }
+        ],
+        "relationships": [
+            {
+                "name": "sale",
+                "type": "many-to-one",
+                "entity": "Sale",
+                "displayProperty": "description"
+            }
+        ]
+    },
+    {
+        "name": "ProductionOrderSale",
+        "label": "Ordem de Produção",
+        "description": "Cadastro da Ordem de Produção gerada automáticamente com a concretização da venda.",
+        "props": [
+            {
+                "prop": "description",
+                "type": "string",
+                "required": false,
+                "label": "Descrição da ordem de Produção"
+            },
+            {
+                "prop": "tags",
+                "type": "string",
+                "required": false,
+                "label": "Etiquetas da Ordem de Produção",
+                "adicionalOptions": "Pode ser 1 ou mais opções: PENDENCIA; SAC; SERVIÇO; CONFERIR MEDIDAS; URGENTE; PRODUCAO PARCIAL; AMOSTRA"
+            }
+        ],
+        "relationships": [
+            {
+                "name": "sale",
+                "type": "many-to-one",
+                "entity": "Sale",
+                "displayProperty": "description"
+            }
+        ]
+    },
+    {
+        "name": "CommentProductionOrderSale",
+        "label": "Comentário da Ordem de Produção",
+        "description": "Comentários realizados em chat de conversa dentro da venda.",
+        "props": [
+            {
+                "prop": "item",
+                "type": "string",
+                "required": true,
+                "label": "Comentário realizado na ordem de produção"
+            }
+        ],
+        "relationships": [
+            {
+                "name": "user",
+                "type": "many-to-one",
+                "entity": "User",
+                "displayProperty": "name"
+            },
+            {
+                "name": "production_order_sale",
+                "type": "many-to-one",
+                "entity": "ProductionOrderSale",
+                "displayProperty": "description"
+            }
+        ]
+    },
+    {
+        "name": "Finance",
+        "label": "Financeiro",
+        "description": "Controle financeiro de receitas e despesas, com a possibilidade de linkar com as vendas.",
+        "props": [
+            {
+                "prop": "date",
+                "type": "date",
+                "required": true,
+                "label": "Data Prevista do Financeiro"
+            },
+            {
+                "prop": "competance_date",
+                "type": "date",
+                "required": false,
+                "label": "Data Competencia Prevista do Financeiro",
+                "adicionalOptions": "Repetir campo de date, mas deixar possivel alternar."
+            },
+            {
+                "prop": "value",
+                "type": "decimal",
+                "required": true,
+                "decimal_format_db": "18,4",
+                "label": "Valor Financeiro"
+            },
+            {
+                "prop": "account",
+                "type": "string",
+                "required": true,
+                "label": "Conta Financeira",
+                "adicionalOptions": "Pode ser \"Contas a receber\" ou \"Comissoes a pagar\", mas em vendas ve só \"Contas a receber\"."
+            },
+            {
+                "prop": "forecast_payment_type",
+                "type": "string",
+                "required": true,
+                "label": "Tipo de Pagamento",
+                "adicionalOptions": "Tipos: Débito, Crédito, PIX, Boleto; Permuta; Grátis;"
+            },
+            {
+                "prop": "realized_payment_type",
+                "type": "string",
+                "required": true,
+                "label": "Tipo de Pagamento",
+                "adicionalOptions": "Tipos: Débito, Crédito, PIX, Boleto; Permuta; Grátis;"
+            },
+            {
+                "prop": "description",
+                "type": "string",
+                "required": false,
+                "label": "Descrição do financeiro"
+            }
+        ]
+    }
+]

@@ -3,7 +3,7 @@ import { <%= toTitleCase(rel.entity) %>Model } from './<%= toArquivoCase(rel.ent
 <% }) %>
 
 export class <%= entityNameTitleCase %>Model {
-    <%= entityNameArquivoCase %>_id: number;
+    <%= entityName %>_id: number;
     <% properties.forEach(prop => { %>
     <%= prop.prop %>: <%= prop.typeTransform %>;
     <% }) %>
@@ -12,7 +12,7 @@ export class <%= entityNameTitleCase %>Model {
     <% }) %>
 
     constructor(data?: Partial<<%= entityNameTitleCase %>Model>) {
-        this.<%= entityNameArquivoCase %>_id = data?.<%= entityNameArquivoCase %>_id ?? null;
+        this.<%= entityName %>_id = data?.<%= entityName %>_id ?? null;
         <% properties.forEach(prop => { %>
         this.<%= prop.prop %> = data?.<%= prop.prop %> ?? null;
         <% }) %>

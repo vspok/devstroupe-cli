@@ -2,7 +2,7 @@
     <!-- Header -->
     <div class="flex flex-row justify-between flex-auto items-center sm:items-center">
         <div class="text-2xl leading-6 font-bold p-4 flex items-center break-all">
-            {{ this.data?.<%= entityName %>_id ? this.data?.<%= entityName %>_id + ' - Editar' : 'Cadastrar' }} <%= entityNameTitleCase %>
+            {{ this.data?.<%= entityName %>_id ? this.data?.<%= entityName %>_id + ' - Editar' : 'Cadastrar' }} <%= label || entityNameTitleCase %>
         </div>
         <div class="p-4">
             <button (click)="clear()" mat-icon-button>
@@ -54,7 +54,7 @@
                                 <mat-label><%= rel.name.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()) %></mat-label>
                                 <mat-select [formControlName]="'<%= rel.name %>_id'">
                                     <mat-option *ngFor="let option of <%= rel.name %>Options" [value]="option.<%= rel.entity %>_id">
-                                        {{ option?.name || option?.title || option?.description }}
+                                        {{ option?.<%= rel.displayProperty || 'title' %> }}
                                     </mat-option>
                                 </mat-select>
                                 <mat-error> Campo Obrigatório </mat-error>
