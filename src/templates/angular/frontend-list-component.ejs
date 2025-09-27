@@ -7,6 +7,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ActivatedRoute } from '@angular/router';
+import { BaseUnsubscribeComponent } from 'app/core/components/base-unsubscribe.component';
 
 import { <%= entityNameTitleCase %>Service } from 'app/services/<%= entityNameArquivoCase %>.service';
 import { <%= entityNameTitleCase %>Model } from 'app/models/<%= entityNameArquivoCase %>.model';
@@ -20,13 +22,13 @@ import { <%= entityNameTitleCase %>FormComponent } from '../form/<%= entityNameA
     ],
     templateUrl: './<%= entityNameArquivoCase %>-list.component.html',
 })
-export class <%= entityNameTitleCase %>ListComponent implements OnInit {
+export class <%= entityNameTitleCase %>ListComponent extends BaseUnsubscribeComponent implements OnInit {
     dataSource = new MatTableDataSource<<%= entityNameTitleCase %>Model>();
-    tableColumns: string[] = [<% properties.forEach(prop => { %>'<%= prop.prop %>', <% }) %>];
+    tableColumns: string[] = [<% properties.filter(prop => !prop.ignoreInForm).forEach(prop => { %>'<%= prop.prop %>', <% }) %>];
     totalItems = 0;
-    filter = { limit: 10, page: 1 };
+    filter:IFilterPagination<<%= entityNameTitleCase %>Model> = { limit: 10, page: 1 };
 
-    constructor(private service: <%= entityNameTitleCase %>Service, private dialog: MatDialog) {}
+    constructor(private service: <%= entityNameTitleCase %>Service, private dialog: MatDialog, private _activatedRoute: ActivatedRoute) {}
 
     ngOnInit(): void {
         this.loadItems();
@@ -36,6 +38,14 @@ export class <%= entityNameTitleCase %>ListComponent implements OnInit {
         this.service.list(this.filter).subscribe((response) => {
             this.dataSource.data = response.items;
             this.totalItems = response.meta.totalItems;
+        });
+        this.onQueryParams();
+    }
+
+    onQueryParams() {
+        this._activatedRoute.queryParams.pipe(this.untilDestroy()).subscribe((params) => {
+            this.filter.text = params['text'];
+            this.loadItems();
         });
     }
 

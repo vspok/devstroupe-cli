@@ -18,7 +18,7 @@
                                 <div class="flex flex-col flex-auto overflow-x-hidden sm:overflow-y-auto">
                                     <div class="overflow-x-auto h-full">
                                         <table class="w-full bg-card striped" mat-table matSort [dataSource]="dataSource" (matSortChange)="sortData($event)">
-                                            <% properties.forEach(prop => { %>
+                                            <% properties.filter(prop => !prop.ignoreInForm).forEach(prop => { %>
                                             <ng-container matColumnDef="<%= prop.prop %>">
                                                 <th mat-header-cell mat-sort-header="<%= entityName %>.<%= prop.prop %>" *matHeaderCellDef>
                                                     <%= prop.label || prop.prop %>

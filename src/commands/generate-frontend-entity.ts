@@ -49,6 +49,19 @@ export default {
                     fs.mkdirSync(paths.models, { recursive: true })
                 }
 
+                // Calcular relacionamentos únicos
+                const uniqueServices = new Map()
+                const relationshipsUniques = []
+
+                if (entity.relationships) {
+                    entity.relationships.forEach((rel) => {
+                        if (!uniqueServices.has(rel.entity)) {
+                            uniqueServices.set(rel.entity, rel.name)
+                            relationshipsUniques.push(rel)
+                        }
+                    })
+                }
+
                 // Gerar arquivos do frontend
                 const templateData = {
                     entityName,
@@ -57,6 +70,7 @@ export default {
                     entityNameArquivoCase,
                     properties: entity.props,
                     relationships: entity.relationships || [],
+                    relationshipsUniques,
                     label: entity.label,
                     description: entity.description,
                 }
@@ -155,6 +169,7 @@ async function generateProperties() {
             decimal_format_db?: DecimalFormatString
             adicionalOptions?: string
             label?: string
+            ignoreInForm?: boolean
         }[]
         relationships?: {
             name: string

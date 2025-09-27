@@ -275,7 +275,8 @@
                 "type": "int",
                 "required": true,
                 "label": "Dias desde a ultima compra",
-                "adicionalOptions": "Função calculada automaticamente para controlar se o cliente está ou não disponivel para vendedores."
+                "adicionalOptions": "Função calculada automaticamente para controlar se o cliente está ou não disponivel para vendedores.",
+                "ignoreInForm": true
             },
             {
                 "prop": "sale_comission",
@@ -296,7 +297,8 @@
                 "type": "date",
                 "required": false,
                 "label": "Data de prazo para o cliente ser removido da carteira do vendedor",
-                "adicionalOptions": "Só preencher quando o vendedor mover tal cliente para sua carteira. (usando NOW() + 3dias)"
+                "adicionalOptions": "Só preencher quando o vendedor mover tal cliente para sua carteira. (usando NOW() + 3dias)",
+                "ignoreInForm": true
             },
             {
                 "prop": "is_network",

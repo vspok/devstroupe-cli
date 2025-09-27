@@ -1,4 +1,4 @@
-<% relationships.forEach(rel => { %>
+<% relationshipsUniques.forEach(rel => { %>
 import { <%= toTitleCase(rel.entity) %>Model } from './<%= toArquivoCase(rel.entity) %>.model';
 <% }) %>
 

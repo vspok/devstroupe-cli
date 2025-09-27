@@ -14,7 +14,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { <%= entityNameTitleCase %>Service } from 'app/services/<%= entityNameArquivoCase %>.service';
 import { <%= entityNameTitleCase %>Model } from 'app/models/<%= entityNameArquivoCase %>.model';
-<% relationships.forEach(rel => { %>
+<% relationshipsUniques.forEach(rel => { %>
 import { <%= toTitleCase(rel.entity) %>Model } from 'app/models/<%= toArquivoCase(rel.entity) %>.model';
 import { <%= toTitleCase(rel.entity) %>Service } from 'app/services/<%= toArquivoCase(rel.entity) %>.service';
 <% }) %>
@@ -59,14 +59,14 @@ export class <%= entityNameTitleCase %>FormComponent implements OnInit {
         private service: <%= entityNameTitleCase %>Service,
         private route: ActivatedRoute,
         private dialogRef: MatDialogRef<<%= entityNameTitleCase %>FormComponent>,
-        <% relationships.forEach(rel => { %>private <%= rel.name %>Service: <%= toTitleCase(rel.entity) %>Service,<% }) %>
+        <% relationshipsUniques.forEach(rel => { %>private <%= rel.name %>Service: <%= toTitleCase(rel.entity) %>Service,<% }) %>
     ) {
         this.dialogRef.addPanelClass('card-dialog');
     }
 
     ngOnInit(): void {
         this.get<%= entityNameTitleCase %>();
-        <% relationships.forEach(rel => { %>this.get<%= toTitleCase(rel.entity) %>Options();<% }) %>
+        <% relationshipsUniques.forEach(rel => { %>this.get<%= toTitleCase(rel.entity) %>Options();<% }) %>
     }
 
     done(): void {
@@ -113,7 +113,7 @@ export class <%= entityNameTitleCase %>FormComponent implements OnInit {
         }
     }
 
-    <% relationships.forEach(rel => { %>
+    <% relationshipsUniques.forEach(rel => { %>
     get<%= toTitleCase(rel.entity) %>Options(): void {
         this.<%= rel.name %>Service
             .list({ limit: 'all' })
