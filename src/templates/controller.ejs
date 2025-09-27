@@ -13,8 +13,8 @@ import { Delete<%= entityNameTitleCase %> } from 'src/application/use-cases/<%= 
 import { <%= entityNameTitleCase %>Model } from 'src/domain/models/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>';
 import { Filter<%= entityNameTitleCase %>} from 'src/domain/repositories/<%= is_tenant ? 'tenanted/' : '' %><%= entityNameArquivoCase %>-repository';
 
-@Controller('<%= entityNameCamelCase %>')
-@ApiTags('<%= entityNameCamelCase %>')
+@Controller('<%= entityName %>')
+@ApiTags('<%= entityName %>')
 @ApiResponse({ status: 500, description: 'Internal error' })
 @ApiExtraModels(<%= entityNameTitleCase %>ViewModel)
 export class <%= entityNameTitleCase %>Controller {
