@@ -77,9 +77,34 @@ async function askForNewFields(toolbox: GluegunToolbox): Promise<any[]> {
                 type: 'list',
                 name: 'type',
                 message: 'Tipo do campo:',
-                choices: ['string', 'number', 'boolean', 'Date'],
+                choices: ['string', 'number', 'boolean', 'Date', 'decimal'],
             },
         ])
+
+        let precision = 24
+        let scale = 8
+
+        // Se o tipo for decimal, perguntar por precisão e escala
+        if (resultType.type === 'decimal') {
+            const precisionResult = await prompt.ask([
+                {
+                    type: 'input',
+                    name: 'precision',
+                    message: 'Precisão (padrão: 24):',
+                },
+            ])
+
+            const scaleResult = await prompt.ask([
+                {
+                    type: 'input',
+                    name: 'scale',
+                    message: 'Escala (padrão: 8):',
+                },
+            ])
+
+            precision = precisionResult.precision ? parseInt(precisionResult.precision) : 24
+            scale = scaleResult.scale ? parseInt(scaleResult.scale) : 8
+        }
 
         const resultConfirm = await prompt.ask([
             {
@@ -88,11 +113,12 @@ async function askForNewFields(toolbox: GluegunToolbox): Promise<any[]> {
                 message: 'O campo é obrigatório?',
             },
         ])
-
+        const decimalProps = resultType.type === 'decimal' ? { precision, scale } : {}
         const result = {
             name: resultName.name,
             type: resultType.type,
             required: resultConfirm.required,
+            ...decimalProps,
         }
 
         fields.push(result)
@@ -133,7 +159,8 @@ async function updateModelFile(filePath: string, newFields: any[]) {
     // Gerar código para os novos campos na model
     const newFieldsCode = newFields
         .map((field) => {
-            return `${field.name}: ${field.type};`
+            const tsType = field.type === 'decimal' ? 'number' : field.type
+            return `${field.name}: ${tsType};`
         })
         .join('\n')
 
@@ -157,10 +184,11 @@ async function updateDtoFile(filePath: string, newFields: any[], dtoType: string
     const newFieldsCode = newFields
         .map((field) => {
             const isOptional = !field.required && dtoType === 'Update'
+            const tsType = field.type === 'decimal' ? 'number' : field.type
             const decorators = [`@ApiProperty({ required: ${field.required ? 'true' : 'false'} })`, isOptional ? '@IsOptional()' : '']
                 .filter(Boolean)
                 .join('\n  ')
-            return `${decorators}\n  ${field.name}${isOptional ? '?' : ''}: ${field.type};`
+            return `${decorators}\n  ${field.name}${isOptional ? '?' : ''}: ${tsType};`
         })
         .join('\n\n')
 
@@ -184,6 +212,13 @@ function generatePropsCode(fields: any[]): string {
                 columnOptions.nullable = true
             }
 
+            // Se for decimal, adicionar type, precision e scale
+            if (field.type === 'decimal') {
+                columnOptions.type = 'decimal'
+                columnOptions.precision = field.precision || 24
+                columnOptions.scale = field.scale || 8
+            }
+
             // Monta a string das opções do decorator
             const optionsString = Object.keys(columnOptions).length
                 ? `{ ${Object.entries(columnOptions)
@@ -191,7 +226,10 @@ function generatePropsCode(fields: any[]): string {
                       .join(', ')} }`
                 : ''
 
-            let propCode = optionsString ? `@Column(${optionsString})\n  ${field.name}: ${field.type};` : `@Column()\n  ${field.name}: ${field.type};`
+            // Para decimal, usar 'number' como tipo TypeScript
+            const tsType = field.type === 'decimal' ? 'number' : field.type
+
+            let propCode = optionsString ? `@Column(${optionsString})\n  ${field.name}: ${tsType};` : `@Column()\n  ${field.name}: ${tsType};`
 
             return propCode
         })
